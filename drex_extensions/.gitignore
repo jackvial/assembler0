@@ -1,0 +1,8 @@
+# Ignore all contents in this directory
+*
+
+# But keep this .gitignore file and README
+!.gitignore
+!README.md
+
+# Extensions should be cloned as separate git repositories into this directory

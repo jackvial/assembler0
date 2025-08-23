@@ -1,0 +1,300 @@
+<?xml version="1.0"?>
+<robot name="low_cost_robot_screwdriver">
+
+  <!-- Materials -->
+  <material name="dark_grey">
+    <color rgba="0.1 0.1 0.1 1.0"/>
+  </material>
+  <material name="light_grey">
+    <color rgba="0.6 0.6 0.6 1.0"/>
+  </material>
+
+  <!-- Base Link -->
+  <link name="base_link">
+    <inertial>
+      <origin xyz="0 0.047 0.014" rpy="0 0 0"/>
+      <mass value="0.068"/>
+      <inertia ixx="0.00004" ixy="0" ixz="0" iyy="0.000038" iyz="0" izz="0.000059"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/base_link.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/base_link.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <!-- Joint 1 - Base rotation -->
+  <link name="link1">
+    <inertial>
+      <origin xyz="0.001 -0.012 0.012" rpy="0 0 0"/>
+      <mass value="0.051"/>
+      <inertia ixx="0.000014" ixy="0" ixz="0" iyy="0.000009" iyz="0" izz="0.000015"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 -0.07 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/first-bracket-motor_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 -0.07 0" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/first-bracket-motor_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="joint1" type="revolute">
+    <origin xyz="0 0.07 0" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="link1"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14159" upper="3.14159" effort="10" velocity="3.14"/>
+    <dynamics damping="5.0" friction="0.1"/>
+  </joint>
+
+  <!-- Joint 2 - Shoulder pitch -->
+  <link name="link2">
+    <inertial>
+      <origin xyz="-0.019 -0.001 0.071" rpy="0 0 0"/>
+      <mass value="0.053"/>
+      <inertia ixx="0.00007" ixy="0" ixz="0" iyy="0.000072" iyz="0" izz="0.000011"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 -0.07 -0.055" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/shoulder-to-elbow-motor_v1_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 -0.07 -0.055" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/shoulder-to-elbow-motor_v1_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="joint2" type="revolute">
+    <origin xyz="0 0 0.055" rpy="0 0 0"/>
+    <parent link="link1"/>
+    <child link="link2"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-3.14159" upper="3.14159" effort="10" velocity="3.14"/>
+    <dynamics damping="5.0" friction="0.1"/>
+  </joint>
+
+  <!-- Joint 3 - Elbow pitch -->
+  <link name="link3">
+    <inertial>
+      <origin xyz="-0.014 0.046 0.054" rpy="0 0 0"/>
+      <mass value="0.045"/>
+      <inertia ixx="0.00006" ixy="0" ixz="0" iyy="0.00006" iyz="0" izz="0.00001"/>
+    </inertial>
+    <visual>
+      <origin xyz="-0.0138 -0.0075 -0.0141" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/elbow_to_wrist_with_motor.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="-0.0138 -0.0075 -0.0141" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/elbow_to_wrist_with_motor.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="joint3" type="revolute">
+    <origin xyz="0 0.0135 0.108" rpy="0 0 0"/>
+    <parent link="link2"/>
+    <child link="link3"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-3.14159" upper="3.14159" effort="10" velocity="3.14"/>
+    <dynamics damping="5.0" friction="0.1"/>
+  </joint>
+
+  <!-- Joint 4 - Wrist pitch -->
+  <link name="link4">
+    <inertial>
+      <origin xyz="0.02 0.026 0" rpy="0 0 0"/>
+      <mass value="0.021"/>
+      <inertia ixx="0.000003" ixy="0" ixz="0" iyy="0.000003" iyz="0" izz="0.000005"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 -0.084 -0.163" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/elbow-to-wrist-motor-reference_v1_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 -0.084 -0.163" rpy="0 0 0"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/elbow-to-wrist-motor-reference_v1_1.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="joint4" type="revolute">
+    <origin xyz="0 0.091 0.0035" rpy="0 0 0"/>
+    <parent link="link3"/>
+    <child link="link4"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-3.14159" upper="3.14159" effort="10" velocity="3.14"/>
+    <dynamics damping="3.0" friction="0.1"/>
+  </joint>
+
+  <!-- Joint 5 - Wrist roll -->
+  <link name="link5">
+    <inertial>
+      <origin xyz="0 0.02 0" rpy="0 0 0"/>
+      <mass value="0.035"/>
+      <inertia ixx="0.00001" ixy="0" ixz="0" iyy="0.000008" iyz="0" izz="0.000012"/>
+    </inertial>
+    <visual>
+      <origin xyz="-0.02 0.024 0" rpy="0 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/screwdriver_servo_holder_with_camera_mount_v1.2.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <visual>
+      <origin xyz="0.007 0.018 -0.007" rpy="0 -3.14159 1.5708"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/XL330_motor.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="-0.02 0.024 0" rpy="0 0 1.5708"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/screwdriver_servo_holder_with_camera_mount_v1.2.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="joint5" type="revolute">
+    <origin xyz="0 0.04 0" rpy="0 0 0"/>
+    <parent link="link4"/>
+    <child link="link5"/>
+    <axis xyz="0 -1 0"/>
+    <limit lower="-3.14159" upper="3.14159" effort="10" velocity="3.14"/>
+    <dynamics damping="3.0" friction="0.1"/>
+  </joint>
+
+  <!-- Joint 6 - Screwdriver rotation (continuous) -->
+  <link name="link6">
+    <inertial>
+      <origin xyz="0 0 -0.015" rpy="0 0 0"/>
+      <mass value="0.015"/>
+      <inertia ixx="0.000002" ixy="0" ixz="0" iyy="0.000002" iyz="0" izz="0.000001"/>
+    </inertial>
+    <visual>
+      <origin xyz="0 0 0" rpy="-3.14159 0 0"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/koch_screwdriver_chuck.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="dark_grey"/>
+    </visual>
+    <visual>
+      <origin xyz="0 0 -0.01" rpy="-3.14159 0 0"/>
+      <geometry>
+        <mesh filename="package://assembler0_simulator/src/assembler0_simulator/low_cost_robot_6dof_screwdriver/assets/screwdriver_bit.stl" scale="0.001 0.001 0.001"/>
+      </geometry>
+      <material name="light_grey"/>
+    </visual>
+    <collision>
+      <origin xyz="0 0 -0.015" rpy="0 0 0"/>
+      <geometry>
+        <cylinder radius="0.003" length="0.03"/>
+      </geometry>
+    </collision>
+  </link>
+
+  <joint name="joint6" type="continuous">
+    <origin xyz="0.007 0.018 -0.013" rpy="0 0 0"/>
+    <parent link="link5"/>
+    <child link="link6"/>
+    <axis xyz="0 0 1"/>
+    <dynamics damping="1.0" friction="0.05"/>
+  </joint>
+
+  <!-- Transmissions for ROS Control -->
+  <transmission name="joint1_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint1">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="joint1_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="joint2_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint2">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="joint2_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="joint3_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint3">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="joint3_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="joint4_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint4">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="joint4_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="joint5_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint5">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="joint5_motor">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="joint6_trans">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint6">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="joint6_motor">
+      <hardwareInterface>hardware_interface/VelocityJointInterface</hardwareInterface>
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+</robot>

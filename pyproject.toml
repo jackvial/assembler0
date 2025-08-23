@@ -1,0 +1,62 @@
+[project]
+name = "assembler0"
+version = "0.1.0"
+description = "Assembler 0 - Open Source Low Cost Assembly Robot"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "Jack Vial", email = "vialjack@gmail.com"}
+]
+dependencies = [
+    "drex",
+    "assembler0-robot",
+]
+
+[project.scripts]
+drex-link = "assembler0.scripts.drex_link:main"
+
+[project.urls]
+Homepage = "https://github.com/jackvial/assembler0"
+Issues = "https://github.com/jackvial/assembler0/issues"
+
+[tool.uv.workspace]
+members = ["packages/*"]
+exclude = ["packages/assembler0-training", "packages/lerobot-data-studio"]
+
+[tool.uv.sources]
+assembler0-robot = { workspace = true }
+assembler0-hardware = { workspace = true }
+
+drex = { workspace = true }
+
+[tool.uv]
+# Shared development dependencies for all packages
+dev-dependencies = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "black>=22.0",
+    "ruff>=0.0.261",
+    "mypy>=1.0",
+    "debugpy>=1.8.1",
+    "vulture>=2.14",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+# Include the new src layout
+[tool.hatch.build.targets.wheel]
+packages = ["src/assembler0"]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.black]
+line-length = 120
+target-version = ["py310"]

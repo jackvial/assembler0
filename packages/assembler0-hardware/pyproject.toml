@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools-scm[toml]>=6.2", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "assembler0-hardware"
+version = "0.1.0"
+description = "Hardware details for the Assembler 0 robot"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Jack Vial", email = "vialjack@gmail.com"}
+]
+# Hardware package - no Python dependencies needed
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "black",
+    "ruff",
+    "mypy",
+]
+
+[tool.setuptools]
+# No Python source code to package - just include data files
+packages = []
+
+[tool.setuptools.package-data]
+"*" = ["*.scad", "*.stl", "*.md"]
+
+[tool.black]
+line-length = 88
+target-version = ['py310']
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true

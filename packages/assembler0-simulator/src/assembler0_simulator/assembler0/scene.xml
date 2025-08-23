@@ -1,0 +1,208 @@
+<mujoco model="assembler0 dual arm scene">
+  <!-- The timestep has a big influence on the contacts stability -->
+  <option cone="elliptic" impratio="10" timestep="0.001"/>
+
+  <!-- Wider view for dual arm setup -->
+  <statistic center="0 0 0.15" extent="1.0"/>
+
+  <visual>
+    <headlight diffuse="0.9 0.9 0.9" ambient="0.5 0.5 0.5" specular="0 0 0"/>
+    <rgba haze="0.15 0.25 0.35 1"/>
+    <global azimuth="140" elevation="-20"/>
+  </visual>
+
+  <compiler angle="radian" autolimits="true"/>
+
+  <asset>
+    <texture type="skybox" builtin="gradient" rgb1="0.3 0.5 0.7" rgb2="0 0 0" width="512" height="3072"/>
+    <texture type="2d" name="groundplane" builtin="checker" mark="edge" rgb1="0.2 0.3 0.4" rgb2="0.1 0.2 0.3"
+      markrgb="0.8 0.8 0.8" width="300" height="300"/>
+    <material name="groundplane" texture="groundplane" texuniform="true" texrepeat="5 5" reflectance="0"/>
+    
+    <!-- Screwdriver arm meshes -->
+    <mesh name="s_base_link" file="../low_cost_robot_6dof_screwdriver/assets/base_link.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="s_first-bracket-motor_1" file="../low_cost_robot_6dof_screwdriver/assets/first-bracket-motor_1.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="s_shoulder-to-elbow-motor_v1_1" file="../low_cost_robot_6dof_screwdriver/assets/shoulder-to-elbow-motor_v1_1.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="s_elbow-to-wrist-motor-reference_v1_1" file="../low_cost_robot_6dof_screwdriver/assets/elbow-to-wrist-motor-reference_v1_1.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="s_elbow_to_wrist_with_motor" file="../low_cost_robot_6dof_screwdriver/assets/elbow_to_wrist_with_motor.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="s_screwdriver_servo_holder_with_camera_mount_v1.2" file="../low_cost_robot_6dof_screwdriver/assets/screwdriver_servo_holder_with_camera_mount_v1.2.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="s_XL330_motor" file="../low_cost_robot_6dof_screwdriver/assets/XL330_motor.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="s_koch_screwdriver_chuck" file="../low_cost_robot_6dof_screwdriver/assets/koch_screwdriver_chuck.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="s_screwdriver_bit" file="../low_cost_robot_6dof_screwdriver/assets/screwdriver_bit.stl" scale="0.001 0.001 0.001"/>
+    
+    <!-- Gripper arm meshes -->
+    <mesh name="g_base_link" file="../low_cost_robot_6dof/assets/base_link.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="g_first-bracket-motor_1" file="../low_cost_robot_6dof/assets/first-bracket-motor_1.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="g_shoulder-to-elbow-motor_v1_1" file="../low_cost_robot_6dof/assets/shoulder-to-elbow-motor_v1_1.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="g_elbow-to-wrist-motor-reference_v1_1" file="../low_cost_robot_6dof/assets/elbow-to-wrist-motor-reference_v1_1.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="g_elbow_to_wrist_with_motor" file="../low_cost_robot_6dof/assets/elbow_to_wrist_with_motor.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="g_gripper-static-motor-pt1" file="../low_cost_robot_6dof/assets/gripper-static-motor-pt1.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="g_gripper-static-motor-pt2" file="../low_cost_robot_6dof/assets/gripper-static-motor-pt2.stl" scale="0.001 0.001 0.001"/>
+    <mesh name="g_gripper-moving-part-dumb_v2_1" file="../low_cost_robot_6dof/assets/gripper-moving-part-dumb_v2_1.stl" scale="0.001 0.001 0.001"/>
+  </asset>
+
+  <default>
+    <!-- Screwdriver arm defaults -->
+    <default class="screwdriver_arm">
+      <general biastype="affine"/>
+      <joint axis="0 1 0"/>
+      <default class="s_joint1">
+        <joint axis="0 0 1" range="-3.14158 3.14158" damping="5.0"/>
+        <position ctrlrange="-3.14158 3.14158" kp="50"/>
+      </default>
+      <default class="s_joint2">
+        <joint axis="1 0 0" range="-3.14158 3.14158" damping="5.0"/>
+        <position ctrlrange="-3.14158 3.14158" kp="20"/>
+      </default>
+      <default class="s_joint3">
+        <joint axis="1 0 0" range="-3.14158 3.14158" damping="5.0"/>
+        <position ctrlrange="-3.14158 3.14158" kp="20"/>
+      </default>
+      <default class="s_joint4">
+        <joint axis="1 0 0" range="-3.14158 3.14158" damping="3.0"/>
+        <position ctrlrange="-3.14158 3.14158" kp="15"/>
+      </default>
+      <default class="s_joint5">
+        <joint axis="0 -1 0" range="-3.14158 3.14158" damping="3.0"/>
+        <position ctrlrange="-3.14158 3.14158" kp="15"/>
+      </default>
+      <default class="s_joint6">
+        <joint axis="0 0 1" limited="false" damping="1.0"/>
+        <position kp="10"/>
+      </default>
+    </default>
+    
+    <!-- Gripper arm defaults -->
+    <default class="gripper_arm">
+      <general biastype="affine"/>
+      <joint axis="0 1 0"/>
+      <default class="g_joint1">
+        <joint axis="0 0 1" range="-3.14158 3.14158" damping="0.5"/>
+        <position ctrlrange="-3.14158 3.14158" kp="50"/>
+      </default>
+      <default class="g_joint2">
+        <joint axis="1 0 0" range="-3.14158 3.14158" damping="0.5"/>
+        <position ctrlrange="-3.14158 3.14158" kp="10"/>
+      </default>
+      <default class="g_joint3">
+        <joint axis="1 0 0" range="-3.14158 3.14158" damping="0.5"/>
+        <position ctrlrange="-3.14158 3.14158" kp="10"/>
+      </default>
+      <default class="g_joint4">
+        <joint axis="1 0 0" range="-3.14158 3.14158" damping="0.5"/>
+        <position ctrlrange="-3.14158 3.14158" kp="10"/>
+      </default>
+      <default class="g_joint5">
+        <joint axis="0 -1 0" range="-3.14158 3.14158" damping="0.5"/>
+        <position ctrlrange="-3.14158 3.14158" kp="10"/>
+      </default>
+      <default class="g_joint6">
+        <joint axis="0 0 -1" range="-2.45 0.032" damping="0.5"/>
+        <position ctrlrange="-1.52 0.032" kp="10"/>
+      </default>
+    </default>
+  </default>
+
+  <worldbody>
+    <light pos="0 -0.8 0.8" dir="0 0.8 -0.4" directional="true"/>
+    <camera name="front_view" pos="0 -0.8 0.4" xyaxes="1 0 0 0 0.4 0.92"/>
+    <camera name="top_view" pos="0 0 1.2" xyaxes="1 0 0 0 1 0"/>
+    <camera name="side_view" pos="0.8 0 0.4" xyaxes="0 1 0 0 0 1"/>
+    
+    <!-- Floor -->
+    <geom name="floor" size="0 0 0.05" type="plane" material="groundplane" pos="0 0 0" friction="0.1"/>
+    
+    <!-- Screwdriver arm (left side) -->
+    <body name="screwdriver_base" pos="-0.3 0 0" euler="0 0 -1.5708">
+      <geom type="mesh" name="s_base_link" mesh="s_base_link" rgba="0.1 0.1 0.1 1"/>
+      <body name="s_joint1" pos="0 0.07 0.0">
+        <joint name="s_joint1" axis="0 0 1" pos="0 0 0" class="s_joint1"/>
+        <geom type="mesh" name="s_joint1_geom" pos="0 -0.07 0" mesh="s_first-bracket-motor_1" rgba="0.1 0.1 0.1 1"/>
+        <body name="s_joint2" pos="0 0 0.055">
+          <joint name="s_joint2" axis="1 0 0" class="s_joint2"/>
+          <geom type="mesh" pos="0 -0.07 -0.055" name="s_joint2_geom" mesh="s_shoulder-to-elbow-motor_v1_1" rgba="0.1 0.1 0.1 1"/>
+          <body name="s_joint3" pos="0.0 0.0135 0.108">
+            <joint name="s_joint3" axis="1 0 0" class="s_joint3"/>
+            <geom pos="-0.0138 -0.0075 -0.0141" type="mesh" name="s_joint3_geom" mesh="s_elbow_to_wrist_with_motor" rgba="0.1 0.1 0.1 1"/>
+            <body name="s_joint4" pos="0 0.091 0.0035">
+              <joint name="s_joint4" class="s_joint4"/>
+              <geom pos="0 -0.084 -0.163" type="mesh" name="s_joint4_geom" mesh="s_elbow-to-wrist-motor-reference_v1_1" rgba="0.1 0.1 0.1 1"/>
+              <body name="s_joint5" pos="0 0.04 0">
+                <joint name="s_joint5" class="s_joint5"/>
+                <geom pos="-0.02 0.024 0" euler="0 0 1.5708" type="mesh" name="s_joint5-servo-holder" mesh="s_screwdriver_servo_holder_with_camera_mount_v1.2" rgba="0.1 0.1 0.1 1"/>
+                <geom pos="0.007 0.018 -0.007" euler="0 -3.14159 1.5708" type="mesh" name="s_joint5-motor" mesh="s_XL330_motor" rgba="0.1 0.1 0.1 1"/>
+                
+                <body name="s_joint6" pos="0.007 0.018 -0.013">
+                  <joint name="s_joint6" class="s_joint6"/>
+                  <geom pos="0 0 0" euler="-3.14159 0 0" type="mesh" name="s_joint6-chuck" mesh="s_koch_screwdriver_chuck" rgba="0.1 0.1 0.1 1"/>
+                  <geom pos="0 0 -0.01" euler="-3.14159 0 0" type="mesh" name="s_joint6-bit" mesh="s_screwdriver_bit" rgba="0.6 0.6 0.6 1"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+    
+    <!-- Gripper arm (right side) -->
+    <body name="gripper_base" pos="0.3 0 0" euler="0 0 1.5708">
+      <geom type="mesh" name="g_base_link" mesh="g_base_link" rgba="0.1 0.1 0.1 1"/>
+      <body name="g_joint1" pos="0 0.07 0.0">
+        <joint name="g_joint1" axis="0 0 1" pos="0 0 0" class="g_joint1"/>
+        <geom type="mesh" name="g_joint1_geom" pos="0 -0.07 0" mesh="g_first-bracket-motor_1" rgba="0.1 0.1 0.1 1"/>
+        <body name="g_joint2" pos="0 0 0.055">
+          <joint name="g_joint2" axis="1 0 0" class="g_joint2"/>
+          <geom type="mesh" pos="0 -0.07 -0.055" name="g_joint2_geom" mesh="g_shoulder-to-elbow-motor_v1_1" rgba="0.1 0.1 0.1 1"/>
+          <body name="g_joint3" pos="0.0 0.0135 0.108">
+            <joint name="g_joint3" axis="1 0 0" class="g_joint3"/>
+            <geom pos="-0.0138 -0.0075 -0.0141" type="mesh" name="g_joint3_geom" mesh="g_elbow_to_wrist_with_motor" rgba="0.1 0.1 0.1 1"/>
+            <body name="g_joint4" pos="0 0.091 0.0035">
+              <joint name="g_joint4" class="g_joint4"/>
+              <geom pos="0 -0.084 -0.163" type="mesh" name="g_joint4_geom" mesh="g_elbow-to-wrist-motor-reference_v1_1" rgba="0.1 0.1 0.1 1"/>
+              <body name="g_joint5" pos="0 0.04 0">
+                <joint name="g_joint5" class="g_joint5"/>
+                <geom pos="0 -0.125 -0.163" type="mesh" name="g_joint5-pt1" mesh="g_gripper-static-motor-pt1" rgba="0.1 0.1 0.1 1"/>
+                <geom pos="0 -0.125 -0.163" type="mesh" name="g_joint5_geom" mesh="g_gripper-static-motor-pt2" rgba="0.1 0.1 0.1 1" contype="0" conaffinity="0"/>
+                <body name="g_joint5-pad">
+                  <geom type="box" condim="3" friction="0.7" mass="0.01" solimp="0.95 0.99 0.001" solref="0.004 1" name="g_static_finger_pad" size="0.006 0.006 0.006" pos="0.0135 0.07 0.0" priority="1" rgba="0 0 0.8 0"/>
+                </body>
+
+                <body name="g_joint6" pos="0 0 0">
+                  <joint pos="-0.009 0.0165 0" name="g_joint6" class="g_joint6"/>
+                  <geom pos="0 -0.125 -0.163" type="mesh" name="g_joint6_geom" mesh="g_gripper-moving-part-dumb_v2_1" rgba="0.1 0.1 0.1 1" contype="0" conaffinity="0"/>
+                  <body name="g_joint6-pad">
+                    <geom type="box" condim="3" friction="0.7" mass="0.01" solimp="0.95 0.99 0.001" solref="0.004 1" name="g_moving_finger_pad" size="0.006 0.006 0.006" pos="0 0.07 0" euler="0 0 -0.3" priority="1" rgba="0 0 0.8 0"/>
+                  </body>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+  </worldbody>
+
+  <actuator>
+    <!-- Screwdriver arm actuators -->
+    <position class="s_joint1" name="s_joint1" joint="s_joint1"/>
+    <position class="s_joint2" name="s_joint2" joint="s_joint2"/>
+    <position class="s_joint3" name="s_joint3" joint="s_joint3"/>
+    <position class="s_joint4" name="s_joint4" joint="s_joint4"/>
+    <position class="s_joint5" name="s_joint5" joint="s_joint5"/>
+    <position class="s_joint6" name="s_joint6" joint="s_joint6"/>
+    
+    <!-- Gripper arm actuators -->
+    <position class="g_joint1" name="g_joint1" joint="g_joint1"/>
+    <position class="g_joint2" name="g_joint2" joint="g_joint2"/>
+    <position class="g_joint3" name="g_joint3" joint="g_joint3"/>
+    <position class="g_joint4" name="g_joint4" joint="g_joint4"/>
+    <position class="g_joint5" name="g_joint5" joint="g_joint5"/>
+    <position class="g_joint6" name="g_joint6" joint="g_joint6"/>
+  </actuator>
+
+  <keyframe>
+    <!-- Default home position with joints at neutral positions for both arms -->
+    <key name="home" qpos="0 0 0 0 0 0 0 0 0 0 0 0" ctrl="0 0 0 0 0 0 0 0 0 0 0 0"/>
+  </keyframe>
+
+</mujoco>
