@@ -3,10 +3,11 @@ plate_thickness = 3.6;
 chuck_height = 22;
 chuck_radius = 4.2;
 chuck_base_radius = 7.4;  // Wider base for the cone
-screw_hole_radius = 1.5;
-screw_hole_offset = 6.44;
+screw_hole_radius = 1.8;
+// screw_hole_offset = 6.44;
+screw_hole_offset = 6.9;
 top_cylinder_height = chuck_height + 2;  // Height of cylinders above screw holes
-top_cylinder_radius = 2.3;  // Radius of cylinders above screw holes
+top_cylinder_radius = 2.8;  // Radius of cylinders above screw holes
 
 module solid_parts() {
     // Chuck plate
@@ -26,6 +27,10 @@ module magnet_cavity() {
     cylinder(h=10, r=3.4);
 }
 
+module plate_screw_head_recess() {
+    cylinder(r=3.4, h=3);
+}
+
 difference() {
     solid_parts();
     
@@ -38,31 +43,35 @@ difference() {
         plat_screw_hole();
     }
     translate([0, screw_hole_offset, plate_thickness]) {
-        cylinder(h=top_cylinder_height, r=top_cylinder_radius);
+        cylinder(h=top_cylinder_height, r=top_cylinder_radius, $fn=32);
     }
     
     translate([0, -screw_hole_offset, -1]) {
         plat_screw_hole();
     }
     translate([0, -screw_hole_offset, plate_thickness]) {
-        cylinder(h=top_cylinder_height, r=top_cylinder_radius);
+        cylinder(h=top_cylinder_height, r=top_cylinder_radius, $fn=32);
     }
     
     translate([screw_hole_offset, 0, -1]) {
         plat_screw_hole();
     }
     translate([screw_hole_offset, 0, plate_thickness]) {
-        cylinder(h=top_cylinder_height, r=top_cylinder_radius);
+        cylinder(h=top_cylinder_height, r=top_cylinder_radius, $fn=32);
     }
     
     translate([-screw_hole_offset, 0, -1]) {
         plat_screw_hole();
     }
     translate([-screw_hole_offset, 0, plate_thickness]) {
-        cylinder(h=top_cylinder_height, r=top_cylinder_radius);
+        cylinder(h=top_cylinder_height, r=top_cylinder_radius, $fn=32);
     }
     
     translate([0, 0, plate_thickness]) {
         magnet_cavity();
-    } 
+    }
+    
+    translate([0, 0, -0.2]) {
+        plate_screw_head_recess();
+    }
 }
