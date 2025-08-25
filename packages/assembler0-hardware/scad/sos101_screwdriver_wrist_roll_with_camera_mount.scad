@@ -117,21 +117,22 @@ if ($render_vitamines) {
     }
 }
 
-// difference() {
-//     // imported follower gripper body
-//     // translate(follower_offset) { 
-//     follower_gripper();
-//     // }
+difference() {
+    follower_gripper();
 
-//     // cube used to remove claw section
-//     translate(cube_cut_pos) { 
-//         cube(cube_cut_size, center = false); 
-//     }
-// }
-
-// camera mount assembly
-translate(mount_origin) {
-    rotate([90, 0, 180]) {
-        camera_mount();
+    // cube used to remove claw section
+    translate(cube_cut_pos) { 
+        cube(cube_cut_size, center = false); 
+    }
+    
+    translate([-68, -25, 0]) {
+        cube(cube_cut_size, center = false); 
     }
 }
+
+// camera mount assembly
+// translate(mount_origin) {
+//     rotate([90, 0, 180]) {
+//         camera_mount();
+//     }
+// }
