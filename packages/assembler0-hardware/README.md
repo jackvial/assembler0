@@ -7,7 +7,7 @@ Hardware designs and CAD files for the Assembler 0 robotics platform.
 This package contains 3D-printable parts and CAD files for the robotic hardware components, including a screwdriver attachment and camera mount for the Koch robotic arm.
 
 ## SO101 Based Arms
-TODO - add picture of the SO101 screwdriver arm
+![SO101 screwdriver with camera](media/so101_screwdriver.jpg)
 
 ### 3D Models (`stl/`)
 - `stl/so101_screwdriver_bit_holder.stl` - Screwdriver magnetic bit holder
@@ -30,7 +30,7 @@ TODO - add picture of the SO101 screwdriver arm
 
 ## Alex Koch Based Arms
 
-![Screwdriver with camera](media/screwdriver_with_camera.jpg)
+![Koch screwdriver with camera](media/screwdriver_with_camera.jpg)
 
 ### 3D Models (`stl/`)
 - `koch_screwdriver_bit_holder.stl` - Ready-to-print screwdriver bit holder
