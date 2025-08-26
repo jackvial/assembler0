@@ -19,14 +19,14 @@ This package contains 3D-printable parts and CAD files for the robotic hardware 
 - `scad/sos101_screwdriver_wrist_roll_with_camera_mount.scad` - Modified wrist roll and camera mount design
 
 ### Instructions
-1. Position both parts on the print bed:  
-   • `stl/screwdriver_servo_holder_with_camera_mount_v1.2.stl`  
-   • `stl/so101_screwdriver_bit_holder.stl`
-2. In your slicer (e.g. Bamboo Studio for the X1-Carbon) add a pause at the top of the magnet cavity.  
-   See this tutorial: https://www.youtube.com/watch?v=SBewgnA0Z2s
-3. When the print pauses, insert a stack of 5 magnets into the cavity.
-4. Resume printing.
-
+1. Print the following parts together. Enable supports, and add outer brim of 5mm:
+   - `stl/sos101_screwdriver_wrist_roll.stl`
+   - `so101_hex_nut_camera_mount.stl` - Orientate sideways
+2. Print the screwdriver bit holder by itself. This part involves embedding the magnets (see BOM below for magnet details)
+    - Part `stl/so101_screwdriver_bit_holder.stl`
+    - Add a pause point at the top of the inner cavity
+    - Place four magnets inside the cavity. For the Koch screwdriver bit holder we used five magnets. The the base plate of the SO101 bit holder is a bit thicker because we need to make room for the head of the screw on the motor attachment, this extra distance causes the magnets to want to stick more to the printer extruder nozzle than the bed so we need to leave some extra room.
+    - Resume printing
 
 ## Alex Koch Based Arms
 
