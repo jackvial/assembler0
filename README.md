@@ -140,8 +140,9 @@ See the [Simulator Package README](packages/assembler0-simulator/README.md) for 
 # Roadmap
 - [x] Hardware for Koch version of the robot
 - [x] LeRobot integration for Koch version of the robot
-- [ ] Hardware for SO101 version of the robot
+- [x] Hardware for SO101 screwdriver arm
 - [ ] LeRobot integration for SO101 version of the robot
+- [ ] Hardware for SO101 magnetic tipped gripper arm
 - [ ] A dataset of about 600 episodes of Koch + S0101 screwdrivering demonstrations
 - [ ] Eval in simulator e.g. [Evaluating Real-World Robot Manipulation Policies in Simulation](https://arxiv.org/pdf/2405.05941)
 
