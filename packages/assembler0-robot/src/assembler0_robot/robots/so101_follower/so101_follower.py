@@ -41,7 +41,7 @@ class SO101Follower(Robot):
     """
 
     config_class = SO101FollowerConfig
-    name = "so101_follower"
+    name = "assembler0_so101_follower"
 
     def __init__(self, config: SO101FollowerConfig):
         super().__init__(config)

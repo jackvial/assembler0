@@ -36,7 +36,7 @@ class SO101Leader(Teleoperator):
     """
 
     config_class = SO101LeaderConfig
-    name = "so101_leader"
+    name = "assembler0_so101_leader"
 
     def __init__(self, config: SO101LeaderConfig):
         super().__init__(config)

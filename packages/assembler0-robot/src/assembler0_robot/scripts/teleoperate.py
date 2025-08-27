@@ -15,30 +15,21 @@ from lerobot.cameras.realsense.configuration_realsense import RealSenseCameraCon
 from lerobot.robots import (  # noqa: F401
     Robot,
     RobotConfig,
-    bi_so100_follower,
-    hope_jr,
-    koch_follower,
-    make_robot_from_config,
-    so100_follower,
-    so101_follower,
 )
 
 from lerobot.teleoperators import (  # noqa: F401
     Teleoperator,
     TeleoperatorConfig,
-    bi_so100_leader,
-    gamepad,
-    homunculus,
-    koch_leader,
     make_teleoperator_from_config,
-    so100_leader,
     so101_leader,
 )
 
 from assembler0_robot.robots.koch_screwdriver_follower import KochScrewdriverFollower
 from assembler0_robot.robots.koch_screwdriver_follower import KochScrewdriverFollowerConfig
+from assembler0_robot.robots.so101_follower import SO101Follower, SO101FollowerConfig
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeader
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeaderConfig
+from assembler0_robot.teleoperators.so101_leader import SO101Leader, SO101LeaderConfig
 
 from lerobot.utils.robot_utils import busy_wait
 from lerobot.utils.utils import init_logging, move_cursor_up
@@ -88,6 +79,11 @@ def teleop_loop(
 
 def main():
     parser = argparse.ArgumentParser(description="Teleoperate the screwdriver robot")
+    
+    # Robot variant
+    parser.add_argument("--robot_variant", type=str, default="koch_screwdriver",
+                       choices=["koch_screwdriver", "so101"],
+                       help="Robot variant to use")
     
     # Robot configuration
     parser.add_argument("--robot_port", type=str, default="/dev/servo_5837053138",
@@ -161,24 +157,41 @@ def main():
             fps=args.camera_fps
         )
     
-    robot_config = KochScrewdriverFollowerConfig(
-        port=args.robot_port,
-        id=args.robot_id,
-        cameras=cameras,
-        screwdriver_current_limit=args.screwdriver_current_limit,
-        clutch_ratio=args.clutch_ratio,
-        clutch_cooldown_s=args.clutch_cooldown_s,
-    )
-    robot = KochScrewdriverFollower(robot_config)
-    
-    # Create teleop config and instance
-    teleop_config = KochScrewdriverLeaderConfig(
-        port=args.leader_port,
-        id=args.leader_id,
-        gripper_open_pos=args.gripper_open_pos,
-        haptic_range=args.haptic_range,
-    )
-    teleop = KochScrewdriverLeader(teleop_config)
+    # Create robot and teleop based on variant
+    if args.robot_variant == "koch_screwdriver":
+        robot_config = KochScrewdriverFollowerConfig(
+            port=args.robot_port,
+            id=args.robot_id,
+            cameras=cameras,
+            screwdriver_current_limit=args.screwdriver_current_limit,
+            clutch_ratio=args.clutch_ratio,
+            clutch_cooldown_s=args.clutch_cooldown_s,
+        )
+        robot = KochScrewdriverFollower(robot_config)
+        
+        teleop_config = KochScrewdriverLeaderConfig(
+            port=args.leader_port,
+            id=args.leader_id,
+            gripper_open_pos=args.gripper_open_pos,
+            haptic_range=args.haptic_range,
+        )
+        teleop = KochScrewdriverLeader(teleop_config)
+    elif args.robot_variant == "so101":
+        robot_config = SO101FollowerConfig(
+            port=args.robot_port,
+            id=args.robot_id,
+            cameras=cameras,
+        )
+        robot = SO101Follower(robot_config)
+        
+        teleop_config = SO101LeaderConfig(
+            port=args.leader_port,
+            id=args.leader_id,
+        )
+        print(f"Teleop config: {teleop_config}")
+        teleop = SO101Leader(teleop_config)
+    else:
+        raise ValueError(f"Unknown robot variant: {args.robot_variant}")
     
     try:
         # Connect devices

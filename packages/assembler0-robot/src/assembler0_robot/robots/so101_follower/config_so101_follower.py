@@ -21,7 +21,7 @@ from lerobot.cameras import CameraConfig
 from lerobot.robots.config import RobotConfig
 
 
-@RobotConfig.register_subclass("so101_follower")
+@RobotConfig.register_subclass("assembler0_so101_follower")
 @dataclass
 class SO101FollowerConfig(RobotConfig):
     # Port to connect to the arm

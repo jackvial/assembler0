@@ -19,7 +19,7 @@ from dataclasses import dataclass
 from lerobot.teleoperators.config import TeleoperatorConfig
 
 
-@TeleoperatorConfig.register_subclass("so101_leader")
+@TeleoperatorConfig.register_subclass("assembler0_so101_leader")
 @dataclass
 class SO101LeaderConfig(TeleoperatorConfig):
     # Port to connect to the arm

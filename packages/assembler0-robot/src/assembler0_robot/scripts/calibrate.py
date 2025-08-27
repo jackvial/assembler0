@@ -17,8 +17,8 @@ from assembler0_robot.robots.koch_follower import KochFollower, KochFollowerConf
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeader
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeaderConfig
 from assembler0_robot.teleoperators.koch_leader import KochLeader, KochLeaderConfig
-from assembler0_robot.robots.so101_follower import So101Follower, So101FollowerConfig
-from assembler0_robot.teleoperators.so101_leader import So101Leader, So101LeaderConfig
+from assembler0_robot.robots.so101_follower import SO101Follower, SO101FollowerConfig
+from assembler0_robot.teleoperators.so101_leader import SO101Leader, SO101LeaderConfig
 
 
 def main():
@@ -81,12 +81,12 @@ def main():
                 logger.info("Calibrating so101 robot (follower)...")
                 
                 # Create robot config and instance (no cameras needed for calibration)
-                robot_config = So101FollowerConfig(
+                robot_config = SO101FollowerConfig(
                     port=args.port,
                     id=args.device_id,
                     cameras={},  # No cameras needed for calibration
                 )
-                device = So101Follower(robot_config)
+                device = SO101Follower(robot_config)
                 
             else:  # koch variant
                 logger.info("Calibrating Koch robot (follower)...")
@@ -115,11 +115,11 @@ def main():
                 logger.info("Calibrating so101 teleoperator (leader)...")
                 
                 # Create teleop config and instance
-                teleop_config = So101LeaderConfig(
+                teleop_config = SO101LeaderConfig(
                     port=args.port,
                     id=args.device_id,
                 )
-                device = So101Leader(teleop_config)
+                device = SO101Leader(teleop_config)
                 
             else:  # koch variant
                 logger.info("Calibrating Koch teleoperator (leader)...")
