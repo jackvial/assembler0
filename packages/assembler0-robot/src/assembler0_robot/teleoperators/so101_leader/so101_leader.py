@@ -201,17 +201,16 @@ class SO101Leader(Teleoperator):
                 #   • GAIN maps the 0-100 gripper position range to an appropriate velocity range.
                 #   • With GAIN = 10 and neutral = 50, the resulting velocity is within ±500.
                 #   • XL330-M077 goal-velocity limit is ±2047 (≈ ±468 RPM at 0.229 RPM/unit).
-                GAIN = 4.0
+                GAIN = 64.0
 
-                # Invert the sign so sequeezing the gripper will move the screwdriver clockwise
-                vel_cmd = -delta * GAIN
+                vel_cmd = delta * GAIN
 
                 # Step 3: Clamp for safety (in case GAIN/neutral is changed)
-                MAX_VEL = 250
+                MAX_VEL = 4000
                 vel_cmd = max(min(vel_cmd, MAX_VEL), -MAX_VEL)
 
                 # Step 4: Dead-band — stop very small residual motions around neutral
-                if abs(vel_cmd) < 4.0:
+                if abs(vel_cmd) < 16.0:
                     vel_cmd = 0.0
 
                 action[f"{action_name}.vel"] = vel_cmd
