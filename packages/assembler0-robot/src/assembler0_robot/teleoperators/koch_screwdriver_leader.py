@@ -113,7 +113,9 @@ class KochScrewdriverLeader(Teleoperator):
         logger.info(f"\nRunning calibration of {self}")
         self.bus.disable_torque()
         for motor in self.bus.motors:
-            self.bus.write("Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value)
+            self.bus.write(
+                "Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value
+            )
 
         drive_modes = dict.fromkeys(self.bus.motors, 0)
 
@@ -121,7 +123,9 @@ class KochScrewdriverLeader(Teleoperator):
         homing_offsets = self.bus.set_half_turn_homings()
 
         full_turn_motors = ["shoulder_pan", "wrist_roll"]
-        unknown_range_motors = [motor for motor in self.bus.motors if motor not in full_turn_motors]
+        unknown_range_motors = [
+            motor for motor in self.bus.motors if motor not in full_turn_motors
+        ]
         print(
             f"Move all joints except {full_turn_motors} sequentially through their "
             "entire ranges of motion.\nRecording positions. Press ENTER to stop..."
@@ -154,14 +158,18 @@ class KochScrewdriverLeader(Teleoperator):
                 # can't rotate more than 360 degrees (from 0 to 4095) And some mistake can happen while
                 # assembling the arm, you could end up with a servo with a position 0 or 4095 at a crucial
                 # point
-                self.bus.write("Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value)
+                self.bus.write(
+                    "Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value
+                )
 
         # Use 'position control current based' for gripper to be limited by the limit of the current.
         # For the follower gripper, it means it can grasp an object without forcing too much even tho,
         # its goal position is a complete grasp (both gripper fingers are ordered to join and reach a touch).
         # For the leader gripper, it means we can use it as a physical trigger, since we can force with our finger
         # to make it move, and it will move back to its original target position when we release the force.
-        self.bus.write("Operating_Mode", "gripper", OperatingMode.CURRENT_POSITION.value)
+        self.bus.write(
+            "Operating_Mode", "gripper", OperatingMode.CURRENT_POSITION.value
+        )
         # Set gripper's goal pos in current position mode so that we can use it as a trigger.
         self.bus.enable_torque("gripper")
         if self.is_calibrated:
@@ -169,7 +177,9 @@ class KochScrewdriverLeader(Teleoperator):
 
     def setup_motors(self) -> None:
         for motor in reversed(self.bus.motors):
-            input(f"Connect the controller board to the '{motor}' motor only and press enter.")
+            input(
+                f"Connect the controller board to the '{motor}' motor only and press enter."
+            )
             self.bus.setup_motor(motor)
             print(f"'{motor}' motor id set to {self.bus.motors[motor].id}")
 
@@ -283,4 +293,4 @@ class KochScrewdriverLeader(Teleoperator):
             raise DeviceNotConnectedError(f"{self} is not connected.")
 
         self.bus.disconnect()
-        logger.info(f"{self} disconnected.") 
+        logger.info(f"{self} disconnected.")

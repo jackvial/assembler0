@@ -26,3 +26,5 @@ class SO101LeaderConfig(TeleoperatorConfig):
     port: str
 
     use_degrees: bool = False
+
+    gripper_open_pos: float = 50.0

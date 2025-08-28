@@ -38,10 +38,17 @@ class SO101Leader(Teleoperator):
     config_class = SO101LeaderConfig
     name = "assembler0_so101_leader"
 
+    # Map the leader motor name to the follower motor and action name
+    motor_to_action_map = {"gripper": "screwdriver"}
+
     def __init__(self, config: SO101LeaderConfig):
         super().__init__(config)
         self.config = config
-        norm_mode_body = MotorNormMode.DEGREES if config.use_degrees else MotorNormMode.RANGE_M100_100
+        norm_mode_body = (
+            MotorNormMode.DEGREES
+            if config.use_degrees
+            else MotorNormMode.RANGE_M100_100
+        )
         self.bus = FeetechMotorsBus(
             port=self.config.port,
             motors={
@@ -57,7 +64,14 @@ class SO101Leader(Teleoperator):
 
     @property
     def action_features(self) -> dict[str, type]:
-        return {f"{motor}.pos": float for motor in self.bus.motors}
+        features = {}
+        for motor in self.bus.motors:
+            action_name = self.motor_to_action_map.get(motor, motor)
+            if action_name == "screwdriver":
+                features[f"{action_name}.vel"] = float
+            else:
+                features[f"{action_name}.pos"] = float
+        return features
 
     @property
     def feedback_features(self) -> dict[str, type]:
@@ -92,7 +106,9 @@ class SO101Leader(Teleoperator):
                 f"Press ENTER to use provided calibration file associated with the id {self.id}, or type 'c' and press ENTER to run calibration: "
             )
             if user_input.strip().lower() != "c":
-                logger.info(f"Writing calibration file associated with the id {self.id} to the motors")
+                logger.info(
+                    f"Writing calibration file associated with the id {self.id} to the motors"
+                )
                 self.bus.write_calibration(self.calibration)
                 return
 
@@ -132,16 +148,79 @@ class SO101Leader(Teleoperator):
 
     def setup_motors(self) -> None:
         for motor in reversed(self.bus.motors):
-            input(f"Connect the controller board to the '{motor}' motor only and press enter.")
+            input(
+                f"Connect the controller board to the '{motor}' motor only and press enter."
+            )
             self.bus.setup_motor(motor)
             print(f"'{motor}' motor id set to {self.bus.motors[motor].id}")
 
     def get_action(self) -> dict[str, float]:
+        if not self.is_connected:
+            raise DeviceNotConnectedError(f"{self} is not connected.")
+
+        # Read all joint positions once.
         start = time.perf_counter()
-        action = self.bus.sync_read("Present_Position")
-        action = {f"{motor}.pos": val for motor, val in action.items()}
+        pos_dict = self.bus.sync_read("Present_Position")
+
+        # Build the action dictionary, converting the screwdriver position into a velocity command.
+        action = {}
+        for motor, pos in pos_dict.items():
+            action_name = self.motor_to_action_map.get(motor, motor)
+
+            if action_name == "screwdriver":
+                # Map the leader gripper position (CURRENT_POSITION mode) to a velocity command for the
+                # follower screwdriver (VELOCITY mode).
+                #
+                # Leader gripper:
+                #   • Position range: 0-100
+                #   • Neutral (open) position: `gripper_open_pos` (default 50)
+                #   • Squeezing  (pos > neutral)   → clockwise rotation  (negative velocity)
+                #   • Opening    (pos < neutral)   → counter-clockwise   (positive velocity)
+                #   • When released, the gripper springs back to the neutral position.
+                #
+                # Follower screwdriver:
+                #   • vel = 0   → no rotation
+                #   • vel > 0   → clockwise
+                #   • vel < 0   → counter-clockwise
+                #
+                # Mapping procedure
+                #   1. delta   = pos - neutral
+                #   2. vel_cmd = -delta * GAIN
+                #   3. Clamp   → vel_cmd ∈ [-MAX_VEL, +MAX_VEL]
+                #   4. Dead-band → |vel_cmd| < THRESHOLD ⇒ vel_cmd = 0
+                #
+                # Example (GAIN = 10, neutral = 50):
+                #   pos = 80  → delta = 30  → vel_cmd = -300
+                #   pos = 10  → delta = -40 → vel_cmd =  400
+                #   pos = 50  → delta = 0   → vel_cmd =    0
+
+                # Step 1: Deviation from neutral position
+                delta = pos - self.config.gripper_open_pos
+
+                # Step 2: Scale delta → velocity
+                #   • GAIN maps the 0-100 gripper position range to an appropriate velocity range.
+                #   • With GAIN = 10 and neutral = 50, the resulting velocity is within ±500.
+                #   • XL330-M077 goal-velocity limit is ±2047 (≈ ±468 RPM at 0.229 RPM/unit).
+                GAIN = 4.0
+
+                # Invert the sign so sequeezing the gripper will move the screwdriver clockwise
+                vel_cmd = -delta * GAIN
+
+                # Step 3: Clamp for safety (in case GAIN/neutral is changed)
+                MAX_VEL = 250
+                vel_cmd = max(min(vel_cmd, MAX_VEL), -MAX_VEL)
+
+                # Step 4: Dead-band — stop very small residual motions around neutral
+                if abs(vel_cmd) < 4.0:
+                    vel_cmd = 0.0
+
+                action[f"{action_name}.vel"] = vel_cmd
+            else:
+                action[f"{action_name}.pos"] = pos
+
         dt_ms = (time.perf_counter() - start) * 1e3
         logger.debug(f"{self} read action: {dt_ms:.1f}ms")
+
         return action
 
     def send_feedback(self, feedback: dict[str, float]) -> None:
