@@ -117,6 +117,7 @@ class SO101Follower(Robot):
         return self.bus.is_calibrated
 
     def calibrate(self) -> None:
+        print("self.calibration", self.calibration)
         if self.calibration:
             # self.calibration is not empty here
             user_input = input(
@@ -186,6 +187,24 @@ class SO101Follower(Robot):
                 # Set I_Coefficient and D_Coefficient to default value 0 and 32
                 self.bus.write("I_Coefficient", motor, 0)
                 self.bus.write("D_Coefficient", motor, 32)
+
+            # Apply current & velocity limits for the screwdriver motor to avoid
+            # over-current shutdowns.  Current_Limit expects raw units.
+            self._screw_limit = int(self.config.screwdriver_current_limit)
+            # todo(jackvial) - update vars to torque_limit and add note about naming differences
+            # between feetech and dynamixel
+            self.bus.write("Torque_Limit", "screwdriver", self._screw_limit)
+
+            # Optional: limit maximum velocity (raw units) for safety.
+            # self.bus.write("Velocity_Limit", "screwdriver", 400)
+
+            # Optional: limit maximum velocity (raw units) for safety.
+            # todo(jackvial) - Feetech has Maximum_Velocity_Limit but the byte size is different https://github.com/huggingface/lerobot/blob/main/src/lerobot/motors/feetech/tables.py#L98
+            # self.bus.write("Velocity_Limit", "screwdriver", 400)
+
+        # todo(jackvial): Make these top level class properties
+        self._clutch_engaged: bool = False
+        self._clutch_release_time: float = 0.0
 
     def setup_motors(self) -> None:
         for motor in reversed(self.bus.motors):
@@ -277,6 +296,54 @@ class SO101Follower(Robot):
         sent_action = {f"{motor}.pos": val for motor, val in goal_pos.items()}
         sent_action.update({f"{motor}.vel": val for motor, val in goal_vel.items()})
         return sent_action
+
+    # ------------------------------------------------------------------
+    # Software-clutch helpers
+    # ------------------------------------------------------------------
+
+    def _read_screwdriver_current(self) -> int:
+        """Return present current (raw units) for the screwdriver motor."""
+
+        return self.bus.sync_read("Present_Current", ["screwdriver"], num_retry=1)[
+            "screwdriver"
+        ]
+
+    def _apply_clutch(self, vel_cmd: int) -> int:
+        """Cut velocity to 0 if current close to limit and update clutch flag."""
+
+        present = abs(self._read_screwdriver_current())
+        threshold_on = self._screw_limit * self.config.clutch_ratio  # engage clutch
+        threshold_off = self._screw_limit * (
+            self.config.clutch_ratio * 0.6
+        )  # release clutch (hysteresis)
+
+        now = time.perf_counter()
+
+        # If still in cooldown window → force velocity to 0
+        if self._clutch_engaged and now < self._clutch_release_time:
+            return 0
+
+        if self._clutch_engaged and now >= self._clutch_release_time:
+            # Cool-down ended, try re-enable torque and resume normal control
+            try:
+                self.bus.enable_torque("screwdriver")
+            except Exception as e:
+                logger.debug(f"Could not re-enable torque: {e}")
+            self._clutch_engaged = False
+
+        if not self._clutch_engaged and present >= threshold_on:
+            # Engage clutch: cut velocity and (best-effort) disable torque to drop current fast
+            try:
+                self.bus.disable_torque("screwdriver")
+            except Exception as e:
+                logger.debug(f"Torque disable failed: {e}")
+            self._clutch_engaged = True
+            # Start cool-down timer
+            self._clutch_release_time = now + self.config.clutch_cooldown_s
+            print(f"Clutch engaged: {present} >= {threshold_on}")
+            return 0
+
+        return vel_cmd
 
     def disconnect(self):
         if not self.is_connected:
