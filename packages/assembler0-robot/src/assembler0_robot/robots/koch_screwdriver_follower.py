@@ -76,7 +76,11 @@ class KochScrewdriverFollower(Robot):
     def __init__(self, config: KochScrewdriverFollowerConfig):
         super().__init__(config)
         self.config = config
-        norm_mode_body = MotorNormMode.DEGREES if config.use_degrees else MotorNormMode.RANGE_M100_100
+        norm_mode_body = (
+            MotorNormMode.DEGREES
+            if config.use_degrees
+            else MotorNormMode.RANGE_M100_100
+        )
         self.bus = DynamixelMotorsBus(
             port=self.config.port,
             motors={
@@ -97,13 +101,15 @@ class KochScrewdriverFollower(Robot):
     def _motors_ft(self) -> dict[str, type]:
         # Set the screwdriver to .vel. Using lekiwi's wheel servos as a reference lerobot/common/robots/lekiwi/lekiwi.py
         return {
-            f"{motor}.vel" if motor == "screwdriver" else f"{motor}.pos": float for motor in self.bus.motors
+            f"{motor}.vel" if motor == "screwdriver" else f"{motor}.pos": float
+            for motor in self.bus.motors
         }
 
     @property
     def _cameras_ft(self) -> dict[str, tuple]:
         return {
-            cam: (self.config.cameras[cam].height, self.config.cameras[cam].width, 3) for cam in self.cameras
+            cam: (self.config.cameras[cam].height, self.config.cameras[cam].width, 3)
+            for cam in self.cameras
         }
 
     @cached_property
@@ -116,7 +122,9 @@ class KochScrewdriverFollower(Robot):
 
     @property
     def is_connected(self) -> bool:
-        return self.bus.is_connected and all(cam.is_connected for cam in self.cameras.values())
+        return self.bus.is_connected and all(
+            cam.is_connected for cam in self.cameras.values()
+        )
 
     def connect(self, calibrate: bool = True) -> None:
         """
@@ -149,14 +157,20 @@ class KochScrewdriverFollower(Robot):
                 print(f"Operating_Mode: {motor} {OperatingMode.VELOCITY.value}")
                 self.bus.write("Operating_Mode", motor, OperatingMode.VELOCITY.value)
             else:
-                print(f"Operating_Mode: {motor} {OperatingMode.EXTENDED_POSITION.value}")
-                self.bus.write("Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value)
+                print(
+                    f"Operating_Mode: {motor} {OperatingMode.EXTENDED_POSITION.value}"
+                )
+                self.bus.write(
+                    "Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value
+                )
 
         input(f"Move {self} to the middle of its range of motion and press ENTER....")
         homing_offsets = self.bus.set_half_turn_homings()
 
         full_turn_motors = ["shoulder_pan", "wrist_roll", "screwdriver"]
-        unknown_range_motors = [motor for motor in self.bus.motors if motor not in full_turn_motors]
+        unknown_range_motors = [
+            motor for motor in self.bus.motors if motor not in full_turn_motors
+        ]
         print(
             f"Move all joints except {full_turn_motors} sequentially through their entire "
             "ranges of motion.\nRecording positions. Press ENTER to stop..."
@@ -188,10 +202,14 @@ class KochScrewdriverFollower(Robot):
             # the arm, you could end up with a servo with a position 0 or 4095 at a crucial point
             for motor in self.bus.motors:
                 if motor != "screwdriver":
-                    self.bus.write("Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value)
+                    self.bus.write(
+                        "Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value
+                    )
 
             # Screwdriver needs to be in velocity mode. Using lekiwi's base_motors wheel servos config as a reference lerobot/common/robots/lekiwi/lekiwi.py
-            self.bus.write("Operating_Mode", "screwdriver", OperatingMode.VELOCITY.value)
+            self.bus.write(
+                "Operating_Mode", "screwdriver", OperatingMode.VELOCITY.value
+            )
 
             # Apply current & velocity limits for the screwdriver motor to avoid
             # over-current shutdowns.  Current_Limit expects raw units.
@@ -213,7 +231,9 @@ class KochScrewdriverFollower(Robot):
 
     def setup_motors(self) -> None:
         for motor in reversed(self.bus.motors):
-            input(f"Connect the controller board to the '{motor}' motor only and press enter.")
+            input(
+                f"Connect the controller board to the '{motor}' motor only and press enter."
+            )
             self.bus.setup_motor(motor)
             print(f"'{motor}' motor id set to {self.bus.motors[motor].id}")
 
@@ -237,9 +257,9 @@ class KochScrewdriverFollower(Robot):
         # Set num_retry=3 to help prevent:
         # ConnectionError: Failed to sync read 'Present_Velocity' on ids=[n] after 1 tries. [TxRxResult] There is no status packet!
         # FATAL: exception not rethrown
-        screwdriver_vel_raw = self.bus.sync_read("Present_Velocity", ["screwdriver"], num_retry=3)[
-            "screwdriver"
-        ]
+        screwdriver_vel_raw = self.bus.sync_read(
+            "Present_Velocity", ["screwdriver"], num_retry=3
+        )["screwdriver"]
         obs_dict["screwdriver.vel"] = screwdriver_vel_raw
 
         dt_ms = (time.perf_counter() - start) * 1e3
@@ -271,8 +291,16 @@ class KochScrewdriverFollower(Robot):
             raise DeviceNotConnectedError(f"{self} is not connected.")
 
         # Split positional and velocity commands
-        goal_pos = {key.removesuffix(".pos"): val for key, val in action.items() if key.endswith(".pos")}
-        goal_vel = {key.removesuffix(".vel"): int(val) for key, val in action.items() if key.endswith(".vel")}
+        goal_pos = {
+            key.removesuffix(".pos"): val
+            for key, val in action.items()
+            if key.endswith(".pos")
+        }
+        goal_vel = {
+            key.removesuffix(".vel"): int(val)
+            for key, val in action.items()
+            if key.endswith(".vel")
+        }
 
         # Cap goal position when too far away from present position.
         # /!\ Slower fps expected due to reading from the follower.
@@ -280,8 +308,12 @@ class KochScrewdriverFollower(Robot):
             present_pos = self.bus.sync_read(
                 "Present_Position", [m for m in self.bus.motors if m != "screwdriver"]
             )
-            goal_present_pos = {key: (g_pos, present_pos[key]) for key, g_pos in goal_pos.items()}
-            goal_pos = ensure_safe_goal_position(goal_present_pos, self.config.max_relative_target)
+            goal_present_pos = {
+                key: (g_pos, present_pos[key]) for key, g_pos in goal_pos.items()
+            }
+            goal_pos = ensure_safe_goal_position(
+                goal_present_pos, self.config.max_relative_target
+            )
 
         # Send commands to the arm
         if goal_pos:
@@ -315,14 +347,18 @@ class KochScrewdriverFollower(Robot):
     def _read_screwdriver_current(self) -> int:
         """Return present current (raw units) for the screwdriver motor."""
 
-        return self.bus.sync_read("Present_Current", ["screwdriver"], num_retry=1)["screwdriver"]
+        return self.bus.sync_read("Present_Current", ["screwdriver"], num_retry=1)[
+            "screwdriver"
+        ]
 
     def _apply_clutch(self, vel_cmd: int) -> int:
         """Cut velocity to 0 if current close to limit and update clutch flag."""
 
         present = abs(self._read_screwdriver_current())
         threshold_on = self._screw_limit * self.config.clutch_ratio  # engage clutch
-        threshold_off = self._screw_limit * (self.config.clutch_ratio * 0.6)  # release clutch (hysteresis)
+        threshold_off = self._screw_limit * (
+            self.config.clutch_ratio * 0.6
+        )  # release clutch (hysteresis)
 
         now = time.perf_counter()
 
@@ -362,6 +398,9 @@ class KochScrewdriverFollower(Robot):
         # Emit haptic only while in cool-down (first half of the window to
         # avoid spamming).
         if self._clutch_engaged:
-            if time.perf_counter() < self._clutch_release_time - self.config.clutch_cooldown_s * 0.5:
+            if (
+                time.perf_counter()
+                < self._clutch_release_time - self.config.clutch_cooldown_s * 0.5
+            ):
                 return {"haptic": 1.0}
-        return {"haptic": 0.0} 
+        return {"haptic": 0.0}
