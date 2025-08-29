@@ -24,6 +24,7 @@ from lerobot.motors.feetech import (
     FeetechMotorsBus,
     OperatingMode,
 )
+from lerobot.motors.feetech.tables import STS_SMS_SERIES_CONTROL_TABLE
 
 from lerobot.robots.robot import Robot
 from lerobot.robots.utils import ensure_safe_goal_position
@@ -255,6 +256,54 @@ class SO101Follower(Robot):
         Returns:
             the action sent to the motors, potentially clipped.
         """
+        # Debug
+        # Read current Torque limit
+        # torque_limit = self.bus.sync_read("Torque_Limit", ["screwdriver"], num_retry=3)[
+        #     "screwdriver"
+        # ]
+        # print("Torque limit", torque_limit)
+
+        # if torque_limit < 100:
+        #     self.bus.write("Torque_Limit", "screwdriver", 600)
+
+        # # Read Maximum_Velocity_Limit
+        # max_vel_limit = self.bus.sync_read(
+        #     "Maximum_Velocity_Limit", ["screwdriver"], num_retry=3
+        # )["screwdriver"]
+        # print("Maximum_Velocity_Limit", max_vel_limit)
+
+        # if max_vel_limit < 100:
+        #     self.bus.write("Maximum_Velocity_Limit", "screwdriver", 255)
+
+        # # Read Maximum_Acceleration
+        # max_acc_limit = self.bus.sync_read(
+        #     "Maximum_Acceleration", ["screwdriver"], num_retry=3
+        # )["screwdriver"]
+        # print("Maximum_Acceleration", max_acc_limit)
+
+        # Update Max_Torque_Limit to 1000
+        # if (
+        #     self.bus.sync_read("Max_Torque_Limit", ["screwdriver"], num_retry=3)[
+        #         "screwdriver"
+        #     ]
+        #     < 1000
+        # ):
+        #     self.bus.write("Max_Torque_Limit", "screwdriver", 1000)
+        #     self.bus.write("Torque_Limit", "screwdriver", 1000)
+
+        # # Read value for each key in STS_SMS_SERIES_CONTROL_TABLE
+        # print(
+        #     "-------------------------------- The result of reading the control table --------------------------------"
+        # )
+        # for key in STS_SMS_SERIES_CONTROL_TABLE:
+        #     try:
+        #         value = self.bus.sync_read(key, ["screwdriver"], num_retry=3)[
+        #             "screwdriver"
+        #         ]
+        #         print(f"{key}: {value}")
+        #     except Exception as e:
+        #         pass
+
         if not self.is_connected:
             raise DeviceNotConnectedError(f"{self} is not connected.")
 
@@ -288,7 +337,10 @@ class SO101Follower(Robot):
         if goal_vel:
             # Apply software clutch for the screwdriver motor
             if "screwdriver" in goal_vel:
+                print("goal vel from teleoperator", goal_vel)
                 goal_vel["screwdriver"] = self._apply_clutch(goal_vel["screwdriver"])
+
+            print("Goal_Velocity", goal_vel)
 
             self.bus.sync_write("Goal_Velocity", goal_vel)
 
