@@ -5,7 +5,7 @@
 #     --device_type=robot \
 #     --robot_variant=so101 \
 #     --port=/dev/ttyACM0 \
-#     --device_id=so101_follower
+#     --device_id=assembler0_so101_follower
 
 
 # Calibrate the so101 leader teleoperator
@@ -14,7 +14,7 @@ python -m assembler0_robot.scripts.calibrate \
     --device_type=leader \
     --robot_variant=so101 \
     --port=/dev/ttyACM1 \
-    --device_id=so101_leader
+    --device_id=assembler0_so101_leader
 
 
 ######### Regular Koch Follower Robot #########
