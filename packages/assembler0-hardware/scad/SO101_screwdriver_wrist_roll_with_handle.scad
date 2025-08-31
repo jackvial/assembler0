@@ -1,4 +1,4 @@
-plate_radius = 11;
+plate_radius = 10.5;
 plate_thickness = 6;
 chuck_height = 22;
 chuck_radius = 4.2;
@@ -9,6 +9,7 @@ countersink_radius = 3;
 screw_hole_offset = 6.9;
 top_cylinder_height = chuck_height + 2;  // Height of cylinders above screw holes
 top_cylinder_radius = 2.8;  // Radius of cylinders above screw holes
+level_length = 25;
 
 module plat_screw_hole() {
     cylinder(h=plate_thickness, r=screw_hole_radius, $fn=32);
@@ -21,46 +22,47 @@ module magnet_cavity() {
     cylinder(h=10, r=3.4);
 }
 
+
 module plate() {
     cylinder(h=plate_thickness, r=plate_radius);
-    translate([-11, -40, 0]) {
-        cube([22, 40, 6]);
+    translate([-plate_radius, -level_length, 0]) {
+        cube([plate_radius*2, level_length, 6]);
     }
-    translate([0, -40, 0]) {
+    translate([0, -level_length, 0]) {
         cylinder(h=plate_thickness, r=plate_radius);
     }
 }
 
 module trigger_assembly() {
     difference() {
-    plate();
-    
-    translate([0, 0, -1]) {
-        cylinder(r=3, h=10);
-    }
-    
-    // Screw holes with cylinders above them
-    translate([0, screw_hole_offset, -1]) {
-        plat_screw_hole();
-    }
-    
-    translate([0, -screw_hole_offset, -1]) {
-        plat_screw_hole();
-    }
+        plate();
+        
+        translate([0, 0, -1]) {
+            cylinder(r=3, h=10);
+        }
+        
+        // Screw holes with cylinders above them
+        translate([0, screw_hole_offset, -1]) {
+            plat_screw_hole();
+        }
+        
+        translate([0, -screw_hole_offset, -1]) {
+            plat_screw_hole();
+        }
 
-    translate([screw_hole_offset, 0, -1]) {
-        plat_screw_hole();
-    }
-    
-    translate([-screw_hole_offset, 0, -1]) {
+        translate([screw_hole_offset, 0, -1]) {
+            plat_screw_hole();
+        }
+        
+        translate([-screw_hole_offset, 0, -1]) {
             plat_screw_hole();
         }
     }
     
     handle_length = 60;
-    translate([0, -40, 0]) {
+    translate([0, -level_length, 0]) {
         translate([0, 0, -20]) {
-            cylinder(h = 20, r = 5, r2 = 11, $fn = 64);
+            cylinder(h = 20, r = 5, r2 = plate_radius, $fn = 64);
         }
         translate([0, 0, -handle_length]) {
             cylinder(h = handle_length, r = 4, r2 = 6, $fn = 64);
@@ -128,13 +130,21 @@ module wrist_roll_assembly() {
 }
 
 module assembly() {
-    wrist_roll_assembly();
+    difference() {
+        wrist_roll_assembly();
+        // Cube away to make room for the trigger plate
+        rotate([90, 0, 0]) {
+            translate([19, 28.8, 15]) {
+                cylinder(r=17, h=10);
+            }
+        }
+    }
     
-    // translate([20, -18, 20]) {
-    //     rotate([90, 180, 0]) {
-    //         trigger_assembly();
-    //     }
-    // }
+    translate([20, -18, 24]) {
+        rotate([90, 180, 0]) {
+            trigger_assembly();
+        }
+    }
 }
 
 assembly();
