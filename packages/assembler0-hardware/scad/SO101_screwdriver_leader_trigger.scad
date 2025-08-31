@@ -23,15 +23,15 @@ module magnet_cavity() {
 
 module plate() {
     cylinder(h=plate_thickness, r=plate_radius);
-    translate([-11, -30, 0]) {
-        cube([22, 30, 6]);
+    translate([-11, -40, 0]) {
+        cube([22, 40, 6]);
     }
-    translate([0, -30, 0]) {
+    translate([0, -40, 0]) {
         cylinder(h=plate_thickness, r=plate_radius);
     }
 }
 
-module main() {
+module trigger_assembly() {
     difference() {
     plate();
     
@@ -58,14 +58,14 @@ module main() {
     }
     
     // cylinder(h = 6, r = 10, $fn = 64);
-    translate([0, -30, 0]) {
+    translate([0, -40, 0]) {
         translate([0, 0, -20]) {
             cylinder(h = 20, r = 5, r2 = 11, $fn = 64);
         }
-        translate([0, 0, -40]) {
-            cylinder(h = 40, r = 4, r2 = 6, $fn = 64);
+        translate([0, 0, -50]) {
+            cylinder(h = 50, r = 4, r2 = 6, $fn = 64);
         }
     }
 }
 
-main();
+// trigger_assembly();
