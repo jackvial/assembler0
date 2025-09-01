@@ -78,6 +78,14 @@ This package is part of the Assembler 0 monorepo. Please see the [main repositor
 
 The hardware files can be used directly for 3D printing or modified using OpenSCAD for the `.scad` files.
 
+## Contributing
+PR's are welcome.
+
+## Development
+- [Download and install OpenSCAD](https://openscad.org/downloads.html#snapshots) . It's recommended to install nightly release, there have been a boat load of performance and other improvements since the last stable release. See [OpenSCAD next release notes](https://github.com/openscad/openscad/blob/master/releases/next.md) for more details
+- Install the [OpenSCAD LSP](https://github.com/Leathong/openscad-LSP and IDE extension) for syntax highlighting and code formatting
+
+
 ## Citation
 
 If you want, you can cite this work with:
