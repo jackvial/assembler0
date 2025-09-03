@@ -14,5 +14,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .config_so101_leader import SO101LeaderConfig
-from .so101_leader import SO101Leader
+from dataclasses import dataclass
+
+from lerobot.teleoperators.config import TeleoperatorConfig
+
+
+@TeleoperatorConfig.register_subclass("assembler0_so101_screwdriver_leader")
+@dataclass
+class SO101ScrewdriverLeaderConfig(TeleoperatorConfig):
+    # Port to connect to the arm
+    port: str
+
+    use_degrees: bool = False
+
+    gripper_open_pos: float = 20.0

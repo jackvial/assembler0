@@ -21,7 +21,7 @@ from lerobot.teleoperators import (  # noqa: F401
     Teleoperator,
     TeleoperatorConfig,
     make_teleoperator_from_config,
-    so101_leader,
+    so101_screwdriver_leader,
 )
 
 from assembler0_robot.robots.koch_screwdriver_follower import KochScrewdriverFollower
@@ -29,7 +29,7 @@ from assembler0_robot.robots.koch_screwdriver_follower import KochScrewdriverFol
 from assembler0_robot.robots.so101_screwdriver_follower import SO101ScrewdriverFollower, SO101ScrewdriverFollowerConfig
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeader
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeaderConfig
-from assembler0_robot.teleoperators.so101_leader import SO101Leader, SO101LeaderConfig
+from assembler0_robot.teleoperators.so101_screwdriver_leader import SO101ScrewdriverLeader, SO101ScrewdriverLeaderConfig
 
 from lerobot.utils.robot_utils import busy_wait
 from lerobot.utils.utils import init_logging, move_cursor_up
@@ -184,12 +184,12 @@ def main():
         )
         robot = SO101ScrewdriverFollower(robot_config)
         
-        teleop_config = SO101LeaderConfig(
+        teleop_config = SO101ScrewdriverLeaderConfig(
             port=args.leader_port,
             id=args.leader_id,
         )
         print(f"Teleop config: {teleop_config}")
-        teleop = SO101Leader(teleop_config)
+        teleop = SO101ScrewdriverLeader(teleop_config)
     else:
         raise ValueError(f"Unknown robot variant: {args.robot_variant}")
     

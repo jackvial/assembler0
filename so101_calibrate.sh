@@ -14,7 +14,7 @@ python -m assembler0_robot.scripts.calibrate \
     --device_type=leader \
     --robot_variant=so101 \
     --port=/dev/ttyACM1 \
-    --device_id=assembler0_so101_leader
+    --device_id=assembler0_so101_screwdriver_leader
 
 
 ######### Regular Koch Follower Robot #########

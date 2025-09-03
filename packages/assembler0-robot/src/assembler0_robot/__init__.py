@@ -7,7 +7,7 @@ A low cost screwdriver enabled robotic arm based on LeRobot.
 __version__ = "1.0.0"
 
 from .robots import KochScrewdriverFollower, KochScrewdriverFollowerConfig, SO101ScrewdriverFollower, SO101ScrewdriverFollowerConfig
-from .teleoperators import KochScrewdriverLeader, KochScrewdriverLeaderConfig, SO101Leader, SO101LeaderConfig
+from .teleoperators import KochScrewdriverLeader, KochScrewdriverLeaderConfig, SO101ScrewdriverLeader, SO101ScrewdriverLeaderConfig
 
 __all__ = [
     "KochScrewdriverFollower",
@@ -16,6 +16,6 @@ __all__ = [
     "KochScrewdriverLeaderConfig",
     "SO101ScrewdriverFollower",
     "SO101ScrewdriverFollowerConfig",
-    "SO101Leader",
-    "SO101LeaderConfig",
+    "SO101ScrewdriverLeader",
+    "SO101ScrewdriverLeaderConfig",
 ] 

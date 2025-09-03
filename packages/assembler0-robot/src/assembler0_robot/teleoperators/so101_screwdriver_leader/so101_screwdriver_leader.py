@@ -25,23 +25,23 @@ from lerobot.motors.feetech import (
 )
 
 from lerobot.teleoperators.teleoperator import Teleoperator
-from .config_so101_leader import SO101LeaderConfig
+from .config_so101_screwdriver_leader import SO101ScrewdriverLeaderConfig
 
 logger = logging.getLogger(__name__)
 
 
-class SO101Leader(Teleoperator):
+class SO101ScrewdriverLeader(Teleoperator):
     """
     SO-101 Leader Arm designed by TheRobotStudio and Hugging Face.
     """
 
-    config_class = SO101LeaderConfig
-    name = "assembler0_so101_leader"
+    config_class = SO101ScrewdriverLeaderConfig
+    name = "assembler0_so101_screwdriver_leader"
 
     # Map the leader motor name to the follower motor and action name
     motor_to_action_map = {"gripper": "screwdriver"}
 
-    def __init__(self, config: SO101LeaderConfig):
+    def __init__(self, config: SO101ScrewdriverLeaderConfig):
         super().__init__(config)
         self.config = config
         norm_mode_body = (

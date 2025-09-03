@@ -6,7 +6,7 @@ python -m assembler0_robot.scripts.teleoperate \
     --robot_port=/dev/ttyACM0 \
     --robot_id=assembler0_so101_screwdriver_follower \
     --leader_port=/dev/ttyACM1 \
-    --leader_id=assembler0_so101_leader \
+    --leader_id=assembler0_so101_screwdriver_leader \
     --side_camera=/dev/video4 \
     --camera_width=800 \
     --camera_height=600 \

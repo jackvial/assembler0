@@ -18,7 +18,7 @@ from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriv
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeaderConfig
 from assembler0_robot.teleoperators.koch_leader import KochLeader, KochLeaderConfig
 from assembler0_robot.robots.so101_screwdriver_follower import SO101ScrewdriverFollower, SO101ScrewdriverFollowerConfig
-from assembler0_robot.teleoperators.so101_leader import SO101Leader, SO101LeaderConfig
+from assembler0_robot.teleoperators.so101_screwdriver_leader import SO101ScrewdriverLeader, SO101ScrewdriverLeaderConfig
 
 
 def main():
@@ -115,11 +115,11 @@ def main():
                 logger.info("Calibrating so101 teleoperator (leader)...")
                 
                 # Create teleop config and instance
-                teleop_config = SO101LeaderConfig(
+                teleop_config = SO101ScrewdriverLeaderConfig(
                     port=args.port,
                     id=args.device_id,
                 )
-                device = SO101Leader(teleop_config)
+                device = SO101ScrewdriverLeader(teleop_config)
                 
             else:  # koch variant
                 logger.info("Calibrating Koch teleoperator (leader)...")
