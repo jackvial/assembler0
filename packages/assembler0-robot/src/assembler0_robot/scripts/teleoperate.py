@@ -26,7 +26,7 @@ from lerobot.teleoperators import (  # noqa: F401
 
 from assembler0_robot.robots.koch_screwdriver_follower import KochScrewdriverFollower
 from assembler0_robot.robots.koch_screwdriver_follower import KochScrewdriverFollowerConfig
-from assembler0_robot.robots.so101_follower import SO101Follower, SO101FollowerConfig
+from assembler0_robot.robots.so101_screwdriver_follower import SO101ScrewdriverFollower, SO101ScrewdriverFollowerConfig
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeader
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeaderConfig
 from assembler0_robot.teleoperators.so101_leader import SO101Leader, SO101LeaderConfig
@@ -177,12 +177,12 @@ def main():
         )
         teleop = KochScrewdriverLeader(teleop_config)
     elif args.robot_variant == "so101":
-        robot_config = SO101FollowerConfig(
+        robot_config = SO101ScrewdriverFollowerConfig(
             port=args.robot_port,
             id=args.robot_id,
             cameras=cameras,
         )
-        robot = SO101Follower(robot_config)
+        robot = SO101ScrewdriverFollower(robot_config)
         
         teleop_config = SO101LeaderConfig(
             port=args.leader_port,

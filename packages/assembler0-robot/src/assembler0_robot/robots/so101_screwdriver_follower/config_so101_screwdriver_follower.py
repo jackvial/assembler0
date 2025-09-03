@@ -21,9 +21,9 @@ from lerobot.cameras import CameraConfig
 from lerobot.robots.config import RobotConfig
 
 
-@RobotConfig.register_subclass("assembler0_so101_follower")
+@RobotConfig.register_subclass("assembler0_so101_screwdriver_follower")
 @dataclass
-class SO101FollowerConfig(RobotConfig):
+class SO101ScrewdriverFollowerConfig(RobotConfig):
     # Port to connect to the arm
     port: str
 
@@ -40,18 +40,6 @@ class SO101FollowerConfig(RobotConfig):
     # Set to `True` for backward compatibility with previous policies/dataset
     use_degrees: bool = False
 
-    # Maximum current (raw Dynamixel units) allowed for the screwdriver motor.
-    # Around 300 corresponds to ~0.8 A on an XL-330 which is plenty for M4 screws
-    # yet well below the shutdown threshold.
-    screwdriver_current_limit: int = 300
-
-    # Ratio of the above limit at which the software clutch engages.
-    # When |present_current| >= limit * clutch_ratio the follower will cut the
-    # screwdriver velocity command to 0 and send haptic feedback to the leader.
-    clutch_ratio: float = 0.5
-
-    # Cool-down duration (seconds) during which any velocity command for the
-    # screwdriver is forced to zero after the clutch engages.  This allows the
-    # current to fall and prevents repeated brown-outs.  Adjust based on your
-    # control-loop FPS (e.g. 1.0 s ≈ 30–60 frames).
-    clutch_cooldown_s: float = 1.0
+    # todo(jackvial): Tune this to a good default based on logging torque while tightening a screw
+    # also add some notes
+    torque_limit: int = 300

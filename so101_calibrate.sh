@@ -5,7 +5,7 @@
 #     --device_type=robot \
 #     --robot_variant=so101 \
 #     --port=/dev/ttyACM0 \
-#     --device_id=assembler0_so101_follower
+#     --device_id=assembler0_so101_screwdriver_follower
 
 
 # Calibrate the so101 leader teleoperator

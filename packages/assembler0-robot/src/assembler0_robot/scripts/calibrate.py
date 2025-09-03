@@ -17,7 +17,7 @@ from assembler0_robot.robots.koch_follower import KochFollower, KochFollowerConf
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeader
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeaderConfig
 from assembler0_robot.teleoperators.koch_leader import KochLeader, KochLeaderConfig
-from assembler0_robot.robots.so101_follower import SO101Follower, SO101FollowerConfig
+from assembler0_robot.robots.so101_screwdriver_follower import SO101ScrewdriverFollower, SO101ScrewdriverFollowerConfig
 from assembler0_robot.teleoperators.so101_leader import SO101Leader, SO101LeaderConfig
 
 
@@ -81,12 +81,12 @@ def main():
                 logger.info("Calibrating so101 robot (follower)...")
                 
                 # Create robot config and instance (no cameras needed for calibration)
-                robot_config = SO101FollowerConfig(
+                robot_config = SO101ScrewdriverFollowerConfig(
                     port=args.port,
                     id=args.device_id,
                     cameras={},  # No cameras needed for calibration
                 )
-                device = SO101Follower(robot_config)
+                device = SO101ScrewdriverFollower(robot_config)
                 
             else:  # koch variant
                 logger.info("Calibrating Koch robot (follower)...")

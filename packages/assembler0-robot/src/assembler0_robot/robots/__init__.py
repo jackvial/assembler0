@@ -1,7 +1,7 @@
 from .koch_screwdriver_follower import KochScrewdriverFollower, KochScrewdriverFollowerConfig
 from .bi_koch_screwdriver_follower import BiKochScrewdriverFollower, BiKochScrewdriverFollowerConfig
 from .koch_follower import KochFollower, KochFollowerConfig
-from .so101_follower import SO101Follower, SO101FollowerConfig
+from .so101_screwdriver_follower import SO101ScrewdriverFollower, SO101ScrewdriverFollowerConfig
 
 __all__ = [
     "KochScrewdriverFollower",
@@ -10,6 +10,6 @@ __all__ = [
     "BiKochScrewdriverFollowerConfig",
     "KochFollower",
     "KochFollowerConfig",
-    "SO101Follower",
-    "SO101FollowerConfig",
+    "SO101ScrewdriverFollower",
+    "SO101ScrewdriverFollowerConfig",
 ] 

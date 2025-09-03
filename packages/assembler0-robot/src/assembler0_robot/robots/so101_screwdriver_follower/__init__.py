@@ -14,5 +14,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .config_so101_follower import SO101FollowerConfig
-from .so101_follower import SO101Follower
+from .config_so101_screwdriver_follower import SO101ScrewdriverFollowerConfig
+from .so101_screwdriver_follower import SO101ScrewdriverFollower
