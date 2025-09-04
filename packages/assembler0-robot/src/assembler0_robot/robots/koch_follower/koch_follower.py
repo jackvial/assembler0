@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 class KochFollower(Robot):
     """
     Local copy of Koch follower without hardcoded configurations.
-    
+
     - [Koch v1.0](https://github.com/AlexanderKoch-Koch/low_cost_robot), with and without the wrist-to-elbow
         expansion, developed by Alexander Koch from [Tau Robotics](https://tau-robotics.com)
     - [Koch v1.1](https://github.com/jess-moss/koch-v1-1) developed by Jess Moss
@@ -37,14 +37,21 @@ class KochFollower(Robot):
         self.config = config
         # Override calibration directory to use original koch_follower calibrations
         from lerobot.constants import HF_LEROBOT_CALIBRATION, ROBOTS
+
         self.calibration_dir = (
-            config.calibration_dir if config.calibration_dir else HF_LEROBOT_CALIBRATION / ROBOTS / "koch_follower"
+            config.calibration_dir
+            if config.calibration_dir
+            else HF_LEROBOT_CALIBRATION / ROBOTS / "koch_follower"
         )
         self.calibration_dir.mkdir(parents=True, exist_ok=True)
         self.calibration_fpath = self.calibration_dir / f"{self.id}.json"
         if self.calibration_fpath.is_file():
             self._load_calibration()
-        norm_mode_body = MotorNormMode.DEGREES if config.use_degrees else MotorNormMode.RANGE_M100_100
+        norm_mode_body = (
+            MotorNormMode.DEGREES
+            if config.use_degrees
+            else MotorNormMode.RANGE_M100_100
+        )
         self.bus = DynamixelMotorsBus(
             port=self.config.port,
             motors={
@@ -66,7 +73,8 @@ class KochFollower(Robot):
     @property
     def _cameras_ft(self) -> dict[str, tuple]:
         return {
-            cam: (self.config.cameras[cam].height, self.config.cameras[cam].width, 3) for cam in self.cameras
+            cam: (self.config.cameras[cam].height, self.config.cameras[cam].width, 3)
+            for cam in self.cameras
         }
 
     @cached_property
@@ -79,7 +87,9 @@ class KochFollower(Robot):
 
     @property
     def is_connected(self) -> bool:
-        return self.bus.is_connected and all(cam.is_connected for cam in self.cameras.values())
+        return self.bus.is_connected and all(
+            cam.is_connected for cam in self.cameras.values()
+        )
 
     def connect(self, calibrate: bool = True) -> None:
         """
@@ -107,13 +117,17 @@ class KochFollower(Robot):
         logger.info(f"\nRunning calibration of {self}")
         self.bus.disable_torque()
         for motor in self.bus.motors:
-            self.bus.write("Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value)
+            self.bus.write(
+                "Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value
+            )
 
         input(f"Move {self} to the middle of its range of motion and press ENTER....")
         homing_offsets = self.bus.set_half_turn_homings()
 
         full_turn_motors = ["shoulder_pan", "wrist_roll"]
-        unknown_range_motors = [motor for motor in self.bus.motors if motor not in full_turn_motors]
+        unknown_range_motors = [
+            motor for motor in self.bus.motors if motor not in full_turn_motors
+        ]
         print(
             f"Move all joints except {full_turn_motors} sequentially through their entire "
             "ranges of motion.\nRecording positions. Press ENTER to stop..."
@@ -145,7 +159,9 @@ class KochFollower(Robot):
             # the arm, you could end up with a servo with a position 0 or 4095 at a crucial point
             for motor in self.bus.motors:
                 if motor != "gripper":
-                    self.bus.write("Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value)
+                    self.bus.write(
+                        "Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value
+                    )
 
             # Use 'position control current based' for gripper to be limited by the limit of the current. For
             # the follower gripper, it means it can grasp an object without forcing too much even tho, its
@@ -153,17 +169,20 @@ class KochFollower(Robot):
             # For the leader gripper, it means we can use it as a physical trigger, since we can force with
             # our finger to make it move, and it will move back to its original target position when we
             # release the force.
-            self.bus.write("Operating_Mode", "gripper", OperatingMode.CURRENT_POSITION.value)
+            self.bus.write(
+                "Operating_Mode", "gripper", OperatingMode.CURRENT_POSITION.value
+            )
 
             # Set better PID values to close the gap between recorded states and actions
-            # TODO(rcadene): Implement an automatic procedure to set optimal PID values for each motor
             self.bus.write("Position_P_Gain", "elbow_flex", 1500)
             self.bus.write("Position_I_Gain", "elbow_flex", 0)
             self.bus.write("Position_D_Gain", "elbow_flex", 600)
 
     def setup_motors(self) -> None:
         for motor in reversed(self.bus.motors):
-            input(f"Connect the controller board to the '{motor}' motor only and press enter.")
+            input(
+                f"Connect the controller board to the '{motor}' motor only and press enter."
+            )
             self.bus.setup_motor(motor)
             print(f"'{motor}' motor id set to {self.bus.motors[motor].id}")
 
@@ -203,14 +222,22 @@ class KochFollower(Robot):
         if not self.is_connected:
             raise DeviceNotConnectedError(f"{self} is not connected.")
 
-        goal_pos = {key.removesuffix(".pos"): val for key, val in action.items() if key.endswith(".pos")}
+        goal_pos = {
+            key.removesuffix(".pos"): val
+            for key, val in action.items()
+            if key.endswith(".pos")
+        }
 
         # Cap goal position when too far away from present position.
         # /!\ Slower fps expected due to reading from the follower.
         if self.config.max_relative_target is not None:
             present_pos = self.bus.sync_read("Present_Position")
-            goal_present_pos = {key: (g_pos, present_pos[key]) for key, g_pos in goal_pos.items()}
-            goal_pos = ensure_safe_goal_position(goal_present_pos, self.config.max_relative_target)
+            goal_present_pos = {
+                key: (g_pos, present_pos[key]) for key, g_pos in goal_pos.items()
+            }
+            goal_pos = ensure_safe_goal_position(
+                goal_present_pos, self.config.max_relative_target
+            )
 
         # Send goal position to the arm
         self.bus.sync_write("Goal_Position", goal_pos)
@@ -224,4 +251,4 @@ class KochFollower(Robot):
         for cam in self.cameras.values():
             cam.disconnect()
 
-        logger.info(f"{self} disconnected.") 
+        logger.info(f"{self} disconnected.")

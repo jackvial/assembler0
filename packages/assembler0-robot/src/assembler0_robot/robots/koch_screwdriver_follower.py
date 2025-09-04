@@ -220,7 +220,6 @@ class KochScrewdriverFollower(Robot):
             self.bus.write("Velocity_Limit", "screwdriver", 400)
 
             # Set better PID values to close the gap between recorded states and actions
-            # TODO(rcadene): Implement an automatic procedure to set optimal PID values for each motor
             self.bus.write("Position_P_Gain", "elbow_flex", 1500)
             self.bus.write("Position_I_Gain", "elbow_flex", 0)
             self.bus.write("Position_D_Gain", "elbow_flex", 600)
