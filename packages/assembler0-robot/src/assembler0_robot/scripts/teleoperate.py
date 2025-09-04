@@ -21,15 +21,25 @@ from lerobot.teleoperators import (  # noqa: F401
     Teleoperator,
     TeleoperatorConfig,
     make_teleoperator_from_config,
-    so101_screwdriver_leader,
+    so101_leader,
 )
 
 from assembler0_robot.robots.koch_screwdriver_follower import KochScrewdriverFollower
-from assembler0_robot.robots.koch_screwdriver_follower import KochScrewdriverFollowerConfig
-from assembler0_robot.robots.so101_screwdriver_follower import SO101ScrewdriverFollower, SO101ScrewdriverFollowerConfig
+from assembler0_robot.robots.koch_screwdriver_follower import (
+    KochScrewdriverFollowerConfig,
+)
+from assembler0_robot.robots.so101_screwdriver_follower import (
+    SO101ScrewdriverFollower,
+    SO101ScrewdriverFollowerConfig,
+)
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeader
-from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeaderConfig
-from assembler0_robot.teleoperators.so101_screwdriver_leader import SO101ScrewdriverLeader, SO101ScrewdriverLeaderConfig
+from assembler0_robot.teleoperators.koch_screwdriver_leader import (
+    KochScrewdriverLeaderConfig,
+)
+from assembler0_robot.teleoperators.so101_screwdriver_leader import (
+    SO101ScrewdriverLeader,
+    SO101ScrewdriverLeaderConfig,
+)
 
 from lerobot.utils.robot_utils import busy_wait
 from lerobot.utils.utils import init_logging, move_cursor_up
@@ -49,7 +59,11 @@ class TeleoperateConfig:
 
 
 def teleop_loop(
-    teleop: Teleoperator, robot: Robot, fps: int, display_data: bool = False, duration: float | None = None
+    teleop: Teleoperator,
+    robot: Robot,
+    fps: int,
+    display_data: bool = False,
+    duration: float | None = None,
 ):
     display_len = max(len(key) for key in robot.action_features)
     start = time.perf_counter()
@@ -77,56 +91,100 @@ def teleop_loop(
 
         move_cursor_up(len(action) + 5)
 
+
 def main():
     parser = argparse.ArgumentParser(description="Teleoperate the screwdriver robot")
-    
+
     # Robot variant
-    parser.add_argument("--robot_variant", type=str, default="koch_screwdriver",
-                       choices=["koch_screwdriver", "so101"],
-                       help="Robot variant to use")
-    
+    parser.add_argument(
+        "--robot_variant",
+        type=str,
+        default="koch_screwdriver",
+        choices=["koch_screwdriver", "so101"],
+        help="Robot variant to use",
+    )
+
     # Robot configuration
-    parser.add_argument("--robot_port", type=str, default="/dev/servo_5837053138",
-                       help="Serial port for the follower robot")
-    parser.add_argument("--robot_id", type=str, default="koch_screwdriver_follower_testing",
-                       help="ID for the follower robot")
-    parser.add_argument("--screwdriver_current_limit", type=int, default=300,
-                       help="Current limit for screwdriver motor")
-    parser.add_argument("--clutch_ratio", type=float, default=0.5,
-                       help="Clutch engagement ratio")
-    parser.add_argument("--clutch_cooldown_s", type=float, default=1.0,
-                       help="Clutch cooldown duration in seconds")
-    
+    parser.add_argument(
+        "--robot_port",
+        type=str,
+        default="/dev/servo_5837053138",
+        help="Serial port for the follower robot",
+    )
+    parser.add_argument(
+        "--robot_id",
+        type=str,
+        default="koch_screwdriver_follower_testing",
+        help="ID for the follower robot",
+    )
+    parser.add_argument(
+        "--screwdriver_current_limit",
+        type=int,
+        default=300,
+        help="Current limit for screwdriver motor",
+    )
+    parser.add_argument(
+        "--clutch_ratio", type=float, default=0.5, help="Clutch engagement ratio"
+    )
+    parser.add_argument(
+        "--clutch_cooldown_s",
+        type=float,
+        default=1.0,
+        help="Clutch cooldown duration in seconds",
+    )
+
     # Leader configuration
-    parser.add_argument("--leader_port", type=str, default="/dev/servo_585A007782",
-                       help="Serial port for the leader teleoperator")
-    parser.add_argument("--leader_id", type=str, default="koch_screwdriver_leader_testing",
-                       help="ID for the leader teleoperator")
-    parser.add_argument("--gripper_open_pos", type=float, default=50.0,
-                       help="Gripper open position for the leader")
-    parser.add_argument("--haptic_range", type=float, default=4.0,
-                       help="Haptic feedback range")
-    
+    parser.add_argument(
+        "--leader_port",
+        type=str,
+        default="/dev/servo_585A007782",
+        help="Serial port for the leader teleoperator",
+    )
+    parser.add_argument(
+        "--leader_id",
+        type=str,
+        default="koch_screwdriver_leader_testing",
+        help="ID for the leader teleoperator",
+    )
+    parser.add_argument(
+        "--gripper_open_pos",
+        type=float,
+        default=50.0,
+        help="Gripper open position for the leader",
+    )
+    parser.add_argument(
+        "--haptic_range", type=float, default=4.0, help="Haptic feedback range"
+    )
+
     # Camera configuration
-    parser.add_argument("--screwdriver_camera", type=str, default="/dev/video0",
-                       help="Path or index for screwdriver camera")
-    parser.add_argument("--side_camera", type=str, default="/dev/video2",
-                       help="Path or index for side camera")  
-    parser.add_argument("--top_camera", type=str, default=None,
-                       help="Path or index for top camera")
-    parser.add_argument("--camera_width", type=int, default=800,
-                       help="Camera width")
-    parser.add_argument("--camera_height", type=int, default=600,
-                       help="Camera height") 
-    parser.add_argument("--camera_fps", type=int, default=30,
-                       help="Camera FPS")
-    
+    parser.add_argument(
+        "--screwdriver_camera",
+        type=str,
+        default="/dev/video0",
+        help="Path or index for screwdriver camera",
+    )
+    parser.add_argument(
+        "--side_camera",
+        type=str,
+        default="/dev/video2",
+        help="Path or index for side camera",
+    )
+    parser.add_argument(
+        "--top_camera", type=str, default=None, help="Path or index for top camera"
+    )
+    parser.add_argument("--camera_width", type=int, default=800, help="Camera width")
+    parser.add_argument("--camera_height", type=int, default=600, help="Camera height")
+    parser.add_argument("--camera_fps", type=int, default=30, help="Camera FPS")
+
     # Control parameters
-    parser.add_argument("--fps", type=int, default=30,
-                       help="Control loop frequency")
-    parser.add_argument("--duration", type=int, default=None,
-                       help="Duration in seconds (None for infinite)")
-    
+    parser.add_argument("--fps", type=int, default=30, help="Control loop frequency")
+    parser.add_argument(
+        "--duration",
+        type=int,
+        default=None,
+        help="Duration in seconds (None for infinite)",
+    )
+
     args = parser.parse_args()
 
     # Setup logging
@@ -137,26 +195,26 @@ def main():
     cameras = {}
     if args.screwdriver_camera:
         cameras["screwdriver"] = OpenCVCameraConfig(
-            index_or_path=args.screwdriver_camera, 
-            width=args.camera_width, 
-            height=args.camera_height, 
-            fps=args.camera_fps
+            index_or_path=args.screwdriver_camera,
+            width=args.camera_width,
+            height=args.camera_height,
+            fps=args.camera_fps,
         )
     if args.side_camera:
         cameras["side"] = OpenCVCameraConfig(
-            index_or_path=args.side_camera, 
-            width=args.camera_width, 
-            height=args.camera_height, 
-            fps=args.camera_fps
+            index_or_path=args.side_camera,
+            width=args.camera_width,
+            height=args.camera_height,
+            fps=args.camera_fps,
         )
     if args.top_camera:
         cameras["top"] = OpenCVCameraConfig(
-            index_or_path=args.top_camera, 
-            width=args.camera_width, 
-            height=args.camera_height, 
-            fps=args.camera_fps
+            index_or_path=args.top_camera,
+            width=args.camera_width,
+            height=args.camera_height,
+            fps=args.camera_fps,
         )
-    
+
     # Create robot and teleop based on variant
     if args.robot_variant == "koch_screwdriver":
         robot_config = KochScrewdriverFollowerConfig(
@@ -168,7 +226,7 @@ def main():
             clutch_cooldown_s=args.clutch_cooldown_s,
         )
         robot = KochScrewdriverFollower(robot_config)
-        
+
         teleop_config = KochScrewdriverLeaderConfig(
             port=args.leader_port,
             id=args.leader_id,
@@ -183,7 +241,7 @@ def main():
             cameras=cameras,
         )
         robot = SO101ScrewdriverFollower(robot_config)
-        
+
         teleop_config = SO101ScrewdriverLeaderConfig(
             port=args.leader_port,
             id=args.leader_id,
@@ -192,7 +250,7 @@ def main():
         teleop = SO101ScrewdriverLeader(teleop_config)
     else:
         raise ValueError(f"Unknown robot variant: {args.robot_variant}")
-    
+
     try:
         # Connect devices
         logger.info("Connecting robot...")
@@ -201,26 +259,26 @@ def main():
         teleop.connect()
 
         logger.info("Starting teleoperation. Press Ctrl+C to stop.")
-        
+
         start_time = time.time()
         step_count = 0
-        
+
         while True:
             loop_start = time.perf_counter()
-            
+
             # Check duration limit
             if args.duration is not None:
                 elapsed = time.time() - start_time
                 if elapsed >= args.duration:
                     logger.info(f"Duration limit reached ({args.duration}s)")
                     break
-            
+
             # Get action from leader
             action = teleop.get_action()
-            
+
             # Send action to follower
             robot.send_action(action)
-            
+
             # Handle haptic feedback
             try:
                 feedback = robot.get_feedback()
@@ -228,18 +286,18 @@ def main():
                     teleop.send_feedback(feedback)
             except Exception as e:
                 logger.debug(f"Feedback warning: {e}")
-            
+
             step_count += 1
-            
+
             # Log progress every second
             if step_count % args.fps == 0:
                 elapsed = time.time() - start_time
                 logger.info(f"Step: {step_count}, Time: {elapsed:.1f}s")
-            
+
             # Maintain loop timing
             dt_s = time.perf_counter() - loop_start
-            busy_wait(1/args.fps - dt_s)
-            
+            busy_wait(1 / args.fps - dt_s)
+
     except KeyboardInterrupt:
         logger.info("\nStopping teleoperation...")
     except Exception as e:
