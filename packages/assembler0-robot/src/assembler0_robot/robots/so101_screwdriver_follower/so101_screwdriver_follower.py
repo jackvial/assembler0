@@ -188,15 +188,11 @@ class SO101ScrewdriverFollower(Robot):
                 self.bus.write("I_Coefficient", motor, 0)
                 self.bus.write("D_Coefficient", motor, 32)
 
-            # Apply torque limit to avoid over heating the motor
+            # Apply torque limit to avoid damaging the motor and for safety
             self.bus.write("Torque_Limit", "screwdriver", int(self.config.torque_limit))
-
-            # Optional: limit maximum velocity (raw units) for safety.
-            # self.bus.write("Velocity_Limit", "screwdriver", 400)
-
-            # Optional: limit maximum velocity (raw units) for safety.
-            # todo(jackvial) - Feetech has Maximum_Velocity_Limit but the byte size is different https://github.com/huggingface/lerobot/blob/main/src/lerobot/motors/feetech/tables.py#L98
-            # self.bus.write("Velocity_Limit", "screwdriver", 400)
+            self.bus.write(
+                "Max_Torque_Limit", "screwdriver", int(self.config.torque_limit)
+            )
 
     def setup_motors(self) -> None:
         for motor in reversed(self.bus.motors):
@@ -248,7 +244,7 @@ class SO101ScrewdriverFollower(Robot):
             the action sent to the motors, potentially clipped.
         """
 
-        self.debug_motor_values()
+        # self.debug_motor_values()
 
         if not self.is_connected:
             raise DeviceNotConnectedError(f"{self} is not connected.")

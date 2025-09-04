@@ -40,6 +40,4 @@ class SO101ScrewdriverFollowerConfig(RobotConfig):
     # Set to `True` for backward compatibility with previous policies/dataset
     use_degrees: bool = False
 
-    # todo(jackvial): Tune this to a good default based on logging torque while tightening a screw
-    # also add some notes
-    torque_limit: int = 300
+    torque_limit: int = 600

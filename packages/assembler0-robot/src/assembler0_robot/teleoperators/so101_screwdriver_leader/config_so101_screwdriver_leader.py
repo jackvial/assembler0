@@ -27,4 +27,4 @@ class SO101ScrewdriverLeaderConfig(TeleoperatorConfig):
 
     use_degrees: bool = False
 
-    gripper_open_pos: float = 20.0
+    gripper_open_pos: float = 50.0
