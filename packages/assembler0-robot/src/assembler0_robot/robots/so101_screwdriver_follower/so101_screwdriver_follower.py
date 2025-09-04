@@ -248,7 +248,7 @@ class SO101ScrewdriverFollower(Robot):
             the action sent to the motors, potentially clipped.
         """
 
-        # self.debug_motor_values()
+        self.debug_motor_values()
 
         if not self.is_connected:
             raise DeviceNotConnectedError(f"{self} is not connected.")
@@ -289,42 +289,6 @@ class SO101ScrewdriverFollower(Robot):
         return sent_action
 
     def debug_motor_values(self):
-        torque_limit = self.bus.sync_read("Torque_Limit", ["screwdriver"], num_retry=3)[
-            "screwdriver"
-        ]
-        print("Torque limit", torque_limit)
-
-        if torque_limit < 100:
-            self.bus.write("Torque_Limit", "screwdriver", 600)
-
-        # Read Maximum_Velocity_Limit
-        max_vel_limit = self.bus.sync_read(
-            "Maximum_Velocity_Limit", ["screwdriver"], num_retry=3
-        )["screwdriver"]
-        print("Maximum_Velocity_Limit", max_vel_limit)
-
-        if max_vel_limit < 100:
-            self.bus.write("Maximum_Velocity_Limit", "screwdriver", 255)
-
-        # Read Maximum_Acceleration
-        max_acc_limit = self.bus.sync_read(
-            "Maximum_Acceleration", ["screwdriver"], num_retry=3
-        )["screwdriver"]
-        print("Maximum_Acceleration", max_acc_limit)
-
-        if (
-            self.bus.sync_read("Max_Torque_Limit", ["screwdriver"], num_retry=3)[
-                "screwdriver"
-            ]
-            < 1000
-        ):
-            self.bus.write("Max_Torque_Limit", "screwdriver", 1000)
-            self.bus.write("Torque_Limit", "screwdriver", 1000)
-
-        # Read value for each key in STS_SMS_SERIES_CONTROL_TABLE
-        print(
-            "-------------------------------- The result of reading the control table --------------------------------"
-        )
         for key in STS_SMS_SERIES_CONTROL_TABLE:
             try:
                 value = self.bus.sync_read(key, ["screwdriver"], num_retry=3)[
