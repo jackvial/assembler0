@@ -118,7 +118,6 @@ class SO101ScrewdriverFollower(Robot):
         return self.bus.is_calibrated
 
     def calibrate(self) -> None:
-        print("self.calibration", self.calibration)
         if self.calibration:
             # self.calibration is not empty here
             user_input = input(
