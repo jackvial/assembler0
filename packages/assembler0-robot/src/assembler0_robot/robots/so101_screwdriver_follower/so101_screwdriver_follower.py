@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import logging
 import time
 from functools import cached_property
@@ -8,59 +6,45 @@ from typing import Any
 from lerobot.cameras.utils import make_cameras_from_configs
 from lerobot.errors import DeviceAlreadyConnectedError, DeviceNotConnectedError
 from lerobot.motors import Motor, MotorCalibration, MotorNormMode
-from lerobot.motors.dynamixel import (
-    DynamixelMotorsBus,
+from lerobot.motors.feetech import (
+    FeetechMotorsBus,
     OperatingMode,
 )
+from lerobot.motors.feetech.tables import STS_SMS_SERIES_CONTROL_TABLE
+
 from lerobot.robots.robot import Robot
 from lerobot.robots.utils import ensure_safe_goal_position
 
-from .config_koch_follower import KochFollowerConfig
+from .config_so101_screwdriver_follower import SO101ScrewdriverFollowerConfig
 
 logger = logging.getLogger(__name__)
 
 
-class KochFollower(Robot):
+class SO101ScrewdriverFollower(Robot):
     """
-    Local copy of Koch follower without hardcoded configurations.
-
-    - [Koch v1.0](https://github.com/AlexanderKoch-Koch/low_cost_robot), with and without the wrist-to-elbow
-        expansion, developed by Alexander Koch from [Tau Robotics](https://tau-robotics.com)
-    - [Koch v1.1](https://github.com/jess-moss/koch-v1-1) developed by Jess Moss
+    SO-101 Follower Arm designed by TheRobotStudio and Hugging Face.
     """
 
-    config_class = KochFollowerConfig
-    name = "my_koch_follower"
+    config_class = SO101ScrewdriverFollowerConfig
+    name = "assembler0_so101_screwdriver_follower"
 
-    def __init__(self, config: KochFollowerConfig):
+    def __init__(self, config: SO101ScrewdriverFollowerConfig):
         super().__init__(config)
         self.config = config
-        # Override calibration directory to use original koch_follower calibrations
-        from lerobot.constants import HF_LEROBOT_CALIBRATION, ROBOTS
-
-        self.calibration_dir = (
-            config.calibration_dir
-            if config.calibration_dir
-            else HF_LEROBOT_CALIBRATION / ROBOTS / "koch_follower"
-        )
-        self.calibration_dir.mkdir(parents=True, exist_ok=True)
-        self.calibration_fpath = self.calibration_dir / f"{self.id}.json"
-        if self.calibration_fpath.is_file():
-            self._load_calibration()
         norm_mode_body = (
             MotorNormMode.DEGREES
             if config.use_degrees
             else MotorNormMode.RANGE_M100_100
         )
-        self.bus = DynamixelMotorsBus(
+        self.bus = FeetechMotorsBus(
             port=self.config.port,
             motors={
-                "shoulder_pan": Motor(1, "xl430-w250", norm_mode_body),
-                "shoulder_lift": Motor(2, "xl430-w250", norm_mode_body),
-                "elbow_flex": Motor(3, "xl330-m288", norm_mode_body),
-                "wrist_flex": Motor(4, "xl330-m288", norm_mode_body),
-                "wrist_roll": Motor(5, "xl330-m288", norm_mode_body),
-                "gripper": Motor(6, "xl330-m288", MotorNormMode.RANGE_0_100),
+                "shoulder_pan": Motor(1, "sts3215", norm_mode_body),
+                "shoulder_lift": Motor(2, "sts3215", norm_mode_body),
+                "elbow_flex": Motor(3, "sts3215", norm_mode_body),
+                "wrist_flex": Motor(4, "sts3215", norm_mode_body),
+                "wrist_roll": Motor(5, "sts3215", norm_mode_body),
+                "screwdriver": Motor(6, "sts3215", MotorNormMode.RANGE_M100_100),
             },
             calibration=self.calibration,
         )
@@ -68,7 +52,10 @@ class KochFollower(Robot):
 
     @property
     def _motors_ft(self) -> dict[str, type]:
-        return {f"{motor}.pos": float for motor in self.bus.motors}
+        return {
+            f"{motor}.vel" if motor == "screwdriver" else f"{motor}.pos": float
+            for motor in self.bus.motors
+        }
 
     @property
     def _cameras_ft(self) -> dict[str, tuple]:
@@ -101,6 +88,9 @@ class KochFollower(Robot):
 
         self.bus.connect()
         if not self.is_calibrated and calibrate:
+            logger.info(
+                "Mismatch between calibration values in the motor and the calibration file or no calibration file found"
+            )
             self.calibrate()
 
         for cam in self.cameras.values():
@@ -114,24 +104,38 @@ class KochFollower(Robot):
         return self.bus.is_calibrated
 
     def calibrate(self) -> None:
+        if self.calibration:
+            # self.calibration is not empty here
+            user_input = input(
+                f"Press ENTER to use provided calibration file associated with the id {self.id}, or type 'c' and press ENTER to run calibration: "
+            )
+            if user_input.strip().lower() != "c":
+                logger.info(
+                    f"Writing calibration file associated with the id {self.id} to the motors"
+                )
+                self.bus.write_calibration(self.calibration)
+                return
+
         logger.info(f"\nRunning calibration of {self}")
         self.bus.disable_torque()
         for motor in self.bus.motors:
-            self.bus.write(
-                "Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value
-            )
+            if motor == "screwdriver":
+                self.bus.write("Operating_Mode", motor, OperatingMode.VELOCITY.value)
+            else:
+                self.bus.write("Operating_Mode", motor, OperatingMode.POSITION.value)
 
         input(f"Move {self} to the middle of its range of motion and press ENTER....")
         homing_offsets = self.bus.set_half_turn_homings()
 
-        full_turn_motors = ["shoulder_pan", "wrist_roll"]
+        print(
+            "Move all joints sequentially through their entire ranges "
+            "of motion.\nRecording positions. Press ENTER to stop..."
+        )
+
+        full_turn_motors = ["screwdriver"]
         unknown_range_motors = [
             motor for motor in self.bus.motors if motor not in full_turn_motors
         ]
-        print(
-            f"Move all joints except {full_turn_motors} sequentially through their entire "
-            "ranges of motion.\nRecording positions. Press ENTER to stop..."
-        )
         range_mins, range_maxes = self.bus.record_ranges_of_motion(unknown_range_motors)
         for motor in full_turn_motors:
             range_mins[motor] = 0
@@ -139,44 +143,42 @@ class KochFollower(Robot):
 
         self.calibration = {}
         for motor, m in self.bus.motors.items():
-            self.calibration[motor] = MotorCalibration(
-                id=m.id,
-                drive_mode=0,
-                homing_offset=homing_offsets[motor],
-                range_min=range_mins[motor],
-                range_max=range_maxes[motor],
-            )
+            if motor not in full_turn_motors:
+                self.calibration[motor] = MotorCalibration(
+                    id=m.id,
+                    drive_mode=0,
+                    homing_offset=homing_offsets[motor],
+                    range_min=range_mins[motor],
+                    range_max=range_maxes[motor],
+                )
 
         self.bus.write_calibration(self.calibration)
         self._save_calibration()
-        logger.info(f"Calibration saved to {self.calibration_fpath}")
+        print("Calibration saved to", self.calibration_fpath)
 
     def configure(self) -> None:
         with self.bus.torque_disabled():
             self.bus.configure_motors()
-            # Use 'extended position mode' for all motors except gripper, because in joint mode the servos
-            # can't rotate more than 360 degrees (from 0 to 4095) And some mistake can happen while assembling
-            # the arm, you could end up with a servo with a position 0 or 4095 at a crucial point
             for motor in self.bus.motors:
-                if motor != "gripper":
+                if motor != "screwdriver":
                     self.bus.write(
-                        "Operating_Mode", motor, OperatingMode.EXTENDED_POSITION.value
+                        "Operating_Mode", motor, OperatingMode.POSITION.value
                     )
+                else:
+                    self.bus.write(
+                        "Operating_Mode", motor, OperatingMode.VELOCITY.value
+                    )
+                # Set P_Coefficient to lower value to avoid shakiness (Default is 32)
+                self.bus.write("P_Coefficient", motor, 16)
+                # Set I_Coefficient and D_Coefficient to default value 0 and 32
+                self.bus.write("I_Coefficient", motor, 0)
+                self.bus.write("D_Coefficient", motor, 32)
 
-            # Use 'position control current based' for gripper to be limited by the limit of the current. For
-            # the follower gripper, it means it can grasp an object without forcing too much even tho, its
-            # goal position is a complete grasp (both gripper fingers are ordered to join and reach a touch).
-            # For the leader gripper, it means we can use it as a physical trigger, since we can force with
-            # our finger to make it move, and it will move back to its original target position when we
-            # release the force.
+            # Apply torque limit to avoid damaging the motor and for safety
+            self.bus.write("Torque_Limit", "screwdriver", int(self.config.torque_limit))
             self.bus.write(
-                "Operating_Mode", "gripper", OperatingMode.CURRENT_POSITION.value
+                "Max_Torque_Limit", "screwdriver", int(self.config.torque_limit)
             )
-
-            # Set better PID values to close the gap between recorded states and actions
-            self.bus.write("Position_P_Gain", "elbow_flex", 1500)
-            self.bus.write("Position_I_Gain", "elbow_flex", 0)
-            self.bus.write("Position_D_Gain", "elbow_flex", 600)
 
     def setup_motors(self) -> None:
         for motor in reversed(self.bus.motors):
@@ -192,10 +194,18 @@ class KochFollower(Robot):
 
         # Read arm position
         start = time.perf_counter()
-        obs_dict = self.bus.sync_read("Present_Position")
-        obs_dict = {f"{motor}.pos": val for motor, val in obs_dict.items()}
+        pos_motors = [m for m in self.bus.motors if m != "screwdriver"]
+        pos_dict = self.bus.sync_read("Present_Position", pos_motors, num_retry=3)
+        obs_dict = {}
+        for motor, val in pos_dict.items():
+            obs_dict[f"{motor}.pos"] = val
         dt_ms = (time.perf_counter() - start) * 1e3
         logger.debug(f"{self} read state: {dt_ms:.1f}ms")
+
+        screwdriver_vel_raw = self.bus.sync_read(
+            "Present_Velocity", ["screwdriver"], num_retry=3
+        )["screwdriver"]
+        obs_dict["screwdriver.vel"] = screwdriver_vel_raw
 
         # Capture images from cameras
         for cam_key, cam in self.cameras.items():
@@ -206,19 +216,22 @@ class KochFollower(Robot):
 
         return obs_dict
 
-    def send_action(self, action: dict[str, float]) -> dict[str, float]:
+    def send_action(self, action: dict[str, Any]) -> dict[str, Any]:
         """Command arm to move to a target joint configuration.
 
         The relative action magnitude may be clipped depending on the configuration parameter
         `max_relative_target`. In this case, the action sent differs from original action.
         Thus, this function always returns the action actually sent.
 
-        Args:
-            action (dict[str, float]): The goal positions for the motors.
+        Raises:
+            RobotDeviceNotConnectedError: if robot is not connected.
 
         Returns:
-            dict[str, float]: The action sent to the motors, potentially clipped.
+            the action sent to the motors, potentially clipped.
         """
+
+        # self.debug_motor_values()
+
         if not self.is_connected:
             raise DeviceNotConnectedError(f"{self} is not connected.")
 
@@ -227,11 +240,18 @@ class KochFollower(Robot):
             for key, val in action.items()
             if key.endswith(".pos")
         }
+        goal_vel = {
+            key.removesuffix(".vel"): int(val)
+            for key, val in action.items()
+            if key.endswith(".vel")
+        }
 
         # Cap goal position when too far away from present position.
         # /!\ Slower fps expected due to reading from the follower.
         if self.config.max_relative_target is not None:
-            present_pos = self.bus.sync_read("Present_Position")
+            present_pos = self.bus.sync_read(
+                "Present_Position", [m for m in self.bus.motors if m != "screwdriver"]
+            )
             goal_present_pos = {
                 key: (g_pos, present_pos[key]) for key, g_pos in goal_pos.items()
             }
@@ -239,9 +259,26 @@ class KochFollower(Robot):
                 goal_present_pos, self.config.max_relative_target
             )
 
-        # Send goal position to the arm
-        self.bus.sync_write("Goal_Position", goal_pos)
-        return {f"{motor}.pos": val for motor, val in goal_pos.items()}
+        # Send commands to the arm
+        if goal_pos:
+            self.bus.sync_write("Goal_Position", goal_pos)
+        if goal_vel:
+            self.bus.sync_write("Goal_Velocity", goal_vel)
+
+        # Merge and return the actually sent commands
+        sent_action = {f"{motor}.pos": val for motor, val in goal_pos.items()}
+        sent_action.update({f"{motor}.vel": val for motor, val in goal_vel.items()})
+        return sent_action
+
+    def debug_motor_values(self):
+        for key in STS_SMS_SERIES_CONTROL_TABLE:
+            try:
+                value = self.bus.sync_read(key, ["screwdriver"], num_retry=3)[
+                    "screwdriver"
+                ]
+                print(f"{key}: {value}")
+            except Exception as e:
+                pass
 
     def disconnect(self):
         if not self.is_connected:

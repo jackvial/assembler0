@@ -230,6 +230,7 @@ version = "0.1.0"
 source = { editable = "packages/assembler0-robot" }
 dependencies = [
     { name = "dynamixel-sdk" },
+    { name = "feetech-servo-sdk" },
     { name = "lerobot", extra = ["pusht"] },
     { name = "numpy" },
     { name = "opencv-python" },
@@ -252,7 +253,8 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "black", marker = "extra == 'dev'" },
-    { name = "dynamixel-sdk" },
+    { name = "dynamixel-sdk", specifier = ">=3.7.31" },
+    { name = "feetech-servo-sdk", specifier = ">=1.0.0" },
     { name = "lerobot", extras = ["pusht"] },
     { name = "mypy", marker = "extra == 'dev'" },
     { name = "numpy" },
@@ -882,6 +884,15 @@ sdist = { url = "https://files.pythonhosted.org/packages/78/d7/6c8b3bfe33eeffa20
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e5/47/d63c60f59a59467fda0f93f46335c9d18526d7071f025cb5b89d5353ea42/fastapi-0.116.1-py3-none-any.whl", hash = "sha256:c46ac7c312df840f0c9e220f7964bada936781bc4e2e6eb71f1c4d7553786565", size = 95631, upload-time = "2025-07-11T16:22:30.485Z" },
 ]
+
+[[package]]
+name = "feetech-servo-sdk"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pyserial" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/5f/8e/c53d6f9a8bf3a86a635b58eeb675723f1b040f1665a0681467756c8989aa/feetech-servo-sdk-1.0.0.tar.gz", hash = "sha256:d4d3832e4b1b22a8222133a414db9f868224c2fb639426a1b11d96ddfe84e69c", size = 8392, upload-time = "2022-11-08T03:44:45.269Z" }
 
 [[package]]
 name = "filelock"

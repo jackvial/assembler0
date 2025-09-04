@@ -1,0 +1,217 @@
+import logging
+import time
+
+from lerobot.errors import DeviceAlreadyConnectedError, DeviceNotConnectedError
+from lerobot.motors import Motor, MotorCalibration, MotorNormMode
+from lerobot.motors.feetech import (
+    FeetechMotorsBus,
+    OperatingMode,
+)
+
+from lerobot.teleoperators.teleoperator import Teleoperator
+from .config_so101_screwdriver_leader import SO101ScrewdriverLeaderConfig
+
+logger = logging.getLogger(__name__)
+
+
+class SO101ScrewdriverLeader(Teleoperator):
+    """
+    SO-101 Leader Arm designed by TheRobotStudio and Hugging Face.
+    """
+
+    config_class = SO101ScrewdriverLeaderConfig
+    name = "assembler0_so101_screwdriver_leader"
+
+    # Map the leader motor name to the follower motor and action name
+    motor_to_action_map = {"gripper": "screwdriver"}
+
+    def __init__(self, config: SO101ScrewdriverLeaderConfig):
+        super().__init__(config)
+        self.config = config
+        norm_mode_body = (
+            MotorNormMode.DEGREES
+            if config.use_degrees
+            else MotorNormMode.RANGE_M100_100
+        )
+        self.bus = FeetechMotorsBus(
+            port=self.config.port,
+            motors={
+                "shoulder_pan": Motor(1, "sts3215", norm_mode_body),
+                "shoulder_lift": Motor(2, "sts3215", norm_mode_body),
+                "elbow_flex": Motor(3, "sts3215", norm_mode_body),
+                "wrist_flex": Motor(4, "sts3215", norm_mode_body),
+                "wrist_roll": Motor(5, "sts3215", norm_mode_body),
+                "gripper": Motor(6, "sts3215", MotorNormMode.RANGE_0_100),
+            },
+            calibration=self.calibration,
+        )
+
+    @property
+    def action_features(self) -> dict[str, type]:
+        features = {}
+        for motor in self.bus.motors:
+            action_name = self.motor_to_action_map.get(motor, motor)
+            if action_name == "screwdriver":
+                features[f"{action_name}.vel"] = float
+            else:
+                features[f"{action_name}.pos"] = float
+        return features
+
+    @property
+    def feedback_features(self) -> dict[str, type]:
+        return {}
+
+    @property
+    def is_connected(self) -> bool:
+        return self.bus.is_connected
+
+    def connect(self, calibrate: bool = True) -> None:
+        if self.is_connected:
+            raise DeviceAlreadyConnectedError(f"{self} already connected")
+
+        self.bus.connect()
+        if not self.is_calibrated and calibrate:
+            logger.info(
+                "Mismatch between calibration values in the motor and the calibration file or no calibration file found"
+            )
+            self.calibrate()
+
+        self.configure()
+        logger.info(f"{self} connected.")
+
+    @property
+    def is_calibrated(self) -> bool:
+        return self.bus.is_calibrated
+
+    def calibrate(self) -> None:
+        if self.calibration:
+            # Calibration file exists, ask user whether to use it or run new calibration
+            user_input = input(
+                f"Press ENTER to use provided calibration file associated with the id {self.id}, or type 'c' and press ENTER to run calibration: "
+            )
+            if user_input.strip().lower() != "c":
+                logger.info(
+                    f"Writing calibration file associated with the id {self.id} to the motors"
+                )
+                self.bus.write_calibration(self.calibration)
+                return
+
+        logger.info(f"\nRunning calibration of {self}")
+        self.bus.disable_torque()
+        for motor in self.bus.motors:
+            self.bus.write("Operating_Mode", motor, OperatingMode.POSITION.value)
+
+        input(f"Move {self} to the middle of its range of motion and press ENTER....")
+        homing_offsets = self.bus.set_half_turn_homings()
+
+        print(
+            "Move all joints sequentially through their entire ranges "
+            "of motion.\nRecording positions. Press ENTER to stop..."
+        )
+        range_mins, range_maxes = self.bus.record_ranges_of_motion()
+
+        self.calibration = {}
+        for motor, m in self.bus.motors.items():
+            self.calibration[motor] = MotorCalibration(
+                id=m.id,
+                drive_mode=0,
+                homing_offset=homing_offsets[motor],
+                range_min=range_mins[motor],
+                range_max=range_maxes[motor],
+            )
+
+        self.bus.write_calibration(self.calibration)
+        self._save_calibration()
+        print(f"Calibration saved to {self.calibration_fpath}")
+
+    def configure(self) -> None:
+        self.bus.disable_torque()
+        self.bus.configure_motors()
+        for motor in self.bus.motors:
+            self.bus.write("Operating_Mode", motor, OperatingMode.POSITION.value)
+
+    def setup_motors(self) -> None:
+        for motor in reversed(self.bus.motors):
+            input(
+                f"Connect the controller board to the '{motor}' motor only and press enter."
+            )
+            self.bus.setup_motor(motor)
+            print(f"'{motor}' motor id set to {self.bus.motors[motor].id}")
+
+    def get_action(self) -> dict[str, float]:
+        if not self.is_connected:
+            raise DeviceNotConnectedError(f"{self} is not connected.")
+
+        # Read all joint positions once.
+        start = time.perf_counter()
+        pos_dict = self.bus.sync_read("Present_Position")
+
+        # Build the action dictionary, converting the screwdriver position into a velocity command.
+        action = {}
+        for motor, pos in pos_dict.items():
+            action_name = self.motor_to_action_map.get(motor, motor)
+
+            if action_name == "screwdriver":
+                # Map the leader gripper position (CURRENT_POSITION mode) to a velocity command for the
+                # follower screwdriver (VELOCITY mode).
+                #
+                # Leader gripper:
+                #   • Position range: 0-100
+                #   • Neutral (open) position: `gripper_open_pos` (default 50)
+                #   • Squeezing  (pos > neutral)   → clockwise rotation  (negative velocity)
+                #   • Opening    (pos < neutral)   → counter-clockwise   (positive velocity)
+                #   • When released, the gripper springs back to the neutral position.
+                #
+                # Follower screwdriver:
+                #   • vel = 0   → no rotation
+                #   • vel > 0   → clockwise
+                #   • vel < 0   → counter-clockwise
+                #
+                # Mapping procedure
+                #   1. delta   = pos - neutral
+                #   2. vel_cmd = -delta * GAIN
+                #   3. Clamp   → vel_cmd ∈ [-MAX_VEL, +MAX_VEL]
+                #   4. Dead-band → |vel_cmd| < THRESHOLD ⇒ vel_cmd = 0
+                #
+                # Example (GAIN = 10, neutral = 50):
+                #   pos = 80  → delta = 30  → vel_cmd = -300
+                #   pos = 10  → delta = -40 → vel_cmd =  400
+                #   pos = 50  → delta = 0   → vel_cmd =    0
+
+                # Step 1: Deviation from neutral position
+                delta = pos - self.config.gripper_open_pos
+
+                # Step 2: Scale delta → velocity
+                #   • GAIN maps the 0-100 gripper position range to an appropriate velocity range.
+                #   • With GAIN = 10 and neutral = 50, the resulting velocity is within ±500.
+                #   • XL330-M077 goal-velocity limit is ±2047 (≈ ±468 RPM at 0.229 RPM/unit).
+                GAIN = 64.0
+
+                vel_cmd = delta * GAIN
+
+                # Step 3: Clamp for safety (in case GAIN/neutral is changed)
+                MAX_VEL = 4000
+                vel_cmd = max(min(vel_cmd, MAX_VEL), -MAX_VEL)
+
+                # Step 4: Dead-band — stop very small residual motions around neutral
+                if abs(vel_cmd) < 16.0:
+                    vel_cmd = 0.0
+
+                action[f"{action_name}.vel"] = vel_cmd
+            else:
+                action[f"{action_name}.pos"] = pos
+
+        dt_ms = (time.perf_counter() - start) * 1e3
+        logger.debug(f"{self} read action: {dt_ms:.1f}ms")
+
+        return action
+
+    def send_feedback(self, feedback: dict[str, float]) -> None:
+        raise NotImplementedError
+
+    def disconnect(self) -> None:
+        if not self.is_connected:
+            DeviceNotConnectedError(f"{self} is not connected.")
+
+        self.bus.disconnect()
+        logger.info(f"{self} disconnected.")

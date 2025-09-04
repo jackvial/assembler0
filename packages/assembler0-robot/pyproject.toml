@@ -7,10 +7,8 @@ name = "assembler0-robot"
 version = "0.1.0"
 description = "Assembler 0 - Open Source Low Cost Assembly Robot"
 readme = "README.md"
-license = {text = "MIT"}
-authors = [
-    {name = "Jack Vial", email = "vialjack@gmail.com"}
-]
+license = { text = "MIT" }
+authors = [{ name = "Jack Vial", email = "vialjack@gmail.com" }]
 dependencies = [
     "lerobot[pusht]",
     "numpy",
@@ -20,20 +18,15 @@ dependencies = [
     "torch",
     "torchvision",
     "transformers",
-    "dynamixel_sdk",
+    "dynamixel-sdk>=3.7.31",
+    "feetech-servo-sdk>=1.0.0",
 ]
 
 [project.optional-dependencies]
-dev = [
-    "pytest",
-    "pytest-cov",
-    "black",
-    "ruff",
-    "mypy",
-]
+dev = ["pytest", "pytest-cov", "black", "ruff", "mypy"]
 
 [tool.setuptools]
-package-dir = {"" = "src"}
+package-dir = { "" = "src" }
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -47,7 +40,56 @@ line-length = 88
 target-version = "py39"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I", "N", "UP", "YTT", "BLE", "B", "A", "COM", "C4", "DTZ", "T10", "DJ", "EM", "EXE", "FA", "ISC", "ICN", "G", "PIE", "T20", "PYI", "PT", "Q", "RSE", "RET", "SLF", "SLOT", "SIM", "TID", "TCH", "INT", "ARG", "PTH", "TD", "FIX", "ERA", "PD", "PGH", "PL", "TRY", "FLY", "NPY", "AIR", "PERF", "RUF"]
+select = [
+    "E",
+    "F",
+    "W",
+    "I",
+    "N",
+    "UP",
+    "YTT",
+    "BLE",
+    "B",
+    "A",
+    "COM",
+    "C4",
+    "DTZ",
+    "T10",
+    "DJ",
+    "EM",
+    "EXE",
+    "FA",
+    "ISC",
+    "ICN",
+    "G",
+    "PIE",
+    "T20",
+    "PYI",
+    "PT",
+    "Q",
+    "RSE",
+    "RET",
+    "SLF",
+    "SLOT",
+    "SIM",
+    "TID",
+    "TCH",
+    "INT",
+    "ARG",
+    "PTH",
+    "TD",
+    "FIX",
+    "ERA",
+    "PD",
+    "PGH",
+    "PL",
+    "TRY",
+    "FLY",
+    "NPY",
+    "AIR",
+    "PERF",
+    "RUF",
+]
 ignore = ["E501", "F401", "F403", "F405"]
 
 [tool.mypy]

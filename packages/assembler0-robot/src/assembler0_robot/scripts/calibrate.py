@@ -17,6 +17,8 @@ from assembler0_robot.robots.koch_follower import KochFollower, KochFollowerConf
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeader
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeaderConfig
 from assembler0_robot.teleoperators.koch_leader import KochLeader, KochLeaderConfig
+from assembler0_robot.robots.so101_screwdriver_follower import SO101ScrewdriverFollower, SO101ScrewdriverFollowerConfig
+from assembler0_robot.teleoperators.so101_screwdriver_leader import SO101ScrewdriverLeader, SO101ScrewdriverLeaderConfig
 
 
 def main():
@@ -25,8 +27,8 @@ def main():
     # Device configuration
     parser.add_argument("--device_type", type=str, choices=["robot", "follower", "leader", "teleop"],
                        required=True, help="Type of device to calibrate")
-    parser.add_argument("--robot_variant", type=str, choices=["screwdriver", "koch"], default="screwdriver",
-                       help="Robot variant: 'screwdriver' for screwdriver arms, 'koch' for regular Koch arms")
+    parser.add_argument("--robot_variant", type=str, choices=["screwdriver", "koch", "so101"], default="screwdriver",
+                       help="Robot variant: 'screwdriver' for screwdriver arms, 'koch' for regular Koch arms, 'so101' for So101 arms")
     parser.add_argument("--port", type=str, required=True,
                        help="Serial port for the device")
     parser.add_argument("--device_id", type=str, required=True,
@@ -75,6 +77,17 @@ def main():
                 )
                 device = KochScrewdriverFollower(robot_config)
                 
+            elif args.robot_variant == "so101":
+                logger.info("Calibrating so101 robot (follower)...")
+                
+                # Create robot config and instance (no cameras needed for calibration)
+                robot_config = SO101ScrewdriverFollowerConfig(
+                    port=args.port,
+                    id=args.device_id,
+                    cameras={},  # No cameras needed for calibration
+                )
+                device = SO101ScrewdriverFollower(robot_config)
+                
             else:  # koch variant
                 logger.info("Calibrating Koch robot (follower)...")
                 
@@ -98,6 +111,15 @@ def main():
                     haptic_range=args.haptic_range,
                 )
                 device = KochScrewdriverLeader(teleop_config)
+            elif args.robot_variant == "so101":
+                logger.info("Calibrating so101 teleoperator (leader)...")
+                
+                # Create teleop config and instance
+                teleop_config = SO101ScrewdriverLeaderConfig(
+                    port=args.port,
+                    id=args.device_id,
+                )
+                device = SO101ScrewdriverLeader(teleop_config)
                 
             else:  # koch variant
                 logger.info("Calibrating Koch teleoperator (leader)...")
@@ -109,7 +131,6 @@ def main():
                     gripper_open_pos=args.gripper_open_pos,
                 )
                 device = KochLeader(teleop_config)
-
         # Perform calibration
         logger.info("Connecting device...")
         device.connect(calibrate=False)
