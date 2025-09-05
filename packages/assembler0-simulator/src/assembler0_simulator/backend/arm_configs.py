@@ -232,6 +232,55 @@ ARM_CONFIGS = {
             'azimuth': 140
         }
     ),
+    
+    'so101': ArmConfig(
+        id='so101',
+        name='SO101 Robot',
+        description='6 degree-of-freedom SO101 robot arm with gripper',
+        model_path='SO101/scene.xml',
+        joints=[
+            JointMapping(
+                name='shoulder_pan',
+                control_axis='left_x',
+                speed_multiplier=1.0,
+                description='Base rotation'
+            ),
+            JointMapping(
+                name='shoulder_lift',
+                control_axis='left_y',
+                speed_multiplier=1.0,
+                description='Shoulder pitch'
+            ),
+            JointMapping(
+                name='elbow_flex',
+                control_axis='right_y',
+                speed_multiplier=1.0,
+                inverted=True,
+                description='Elbow'
+            ),
+            JointMapping(
+                name='wrist_flex',
+                control_axis='right_x',
+                speed_multiplier=1.0,
+                description='Wrist pitch'
+            ),
+            JointMapping(
+                name='wrist_roll',
+                control_axis='dpad_x',
+                speed_multiplier=0.5,
+                description='Wrist roll'
+            ),
+        ],
+        gripper_joint='gripper',
+        gripper_open_position=1.74533,
+        gripper_close_position=-0.17453,
+        default_camera={
+            'lookat': [0.0, 0.0, 0.1],
+            'distance': 0.8,
+            'elevation': -25,
+            'azimuth': 135
+        }
+    ),
 }
 
 

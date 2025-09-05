@@ -170,6 +170,7 @@ source = { editable = "." }
 dependencies = [
     { name = "assembler0-robot" },
     { name = "drex" },
+    { name = "opencv-python" },
 ]
 
 [package.dev-dependencies]
@@ -187,6 +188,7 @@ dev = [
 requires-dist = [
     { name = "assembler0-robot", editable = "packages/assembler0-robot" },
     { name = "drex", editable = "packages/drex-cli" },
+    { name = "opencv-python", specifier = ">=4.12.0.88" },
 ]
 
 [package.metadata.requires-dev]
