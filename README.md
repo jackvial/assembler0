@@ -1,6 +1,6 @@
-# Assembler 0
+# Assembler 0 - Seed Factory Framework
 
-An open source low-cost robot designed for assembly tasks. Assembler 0 is a bimanual robot with one arm having a screwdriver manipulator, and the other arm having a gripper with a magnetic-tipped claw for picking up metal screws.
+An open source low-cost robotic system designed for self replication and self assembly. Assembler 0 is a three armed robotic system with gripper, screwdriver, and extruder arms.
 
 The software is built on top of the [LeRobot](https://github.com/lerobot/lerobot) framework and is designed to be fully compatible with the LeRobot ecosystem and tooling.
 
