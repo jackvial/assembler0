@@ -159,11 +159,11 @@ If you want, you can cite this work with:
 
 ```bibtex
 @misc{vial2025assembler0,
-  title={Assembler 0: A Self Replicating Robot Framework},
+  title={Assembler 0: A Self-Replicating Robot Framework},
   author={Vial, Jack},
   year={2025},
   howpublished={\url{https://github.com/jackvial/assembler0}},
-  note={A Self Replicating Robot Framework}
+  note={A Self-Replicating Robot Framework}
 }
 ```
 
