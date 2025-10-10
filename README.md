@@ -1,6 +1,9 @@
-# Assembler 0
+# Assembler 0 - A Self-Replicating Robot Framework
 
-An open source low-cost robot designed for assembly tasks. Assembler 0 is a bimanual robot with one arm having a screwdriver manipulator, and the other arm having a gripper with a magnetic-tipped claw for picking up metal screws.
+An open-source, low-cost robot designed for self-replication and self-assembly research. Assembler 0 is a three-arm robot design:
+- **Gripper arm** with magnetic-tipped claw for general manipulation tasks and holding screws
+- **Screwdriver arm** for screwdriving tasks
+- **3D Printer arm** for printing parts (coming soon...)
 
 The software is built on top of the [LeRobot](https://github.com/lerobot/lerobot) framework and is designed to be fully compatible with the LeRobot ecosystem and tooling.
 
@@ -141,6 +144,7 @@ See the [Simulator Package README](packages/assembler0-simulator/README.md) for 
 - [x] Hardware for Koch version of the robot
 - [x] LeRobot integration for Koch version of the robot
 - [x] Hardware for SO101 screwdriver arm
+- [ ] Hardware for the SO101 3D printing arms (coming soon...)
 - [ ] LeRobot integration for SO101 version of the robot
 - [ ] Hardware for SO101 magnetic tipped gripper arm
 - [ ] A dataset of about 600 episodes of Koch + S0101 screwdrivering demonstrations
@@ -155,11 +159,11 @@ If you want, you can cite this work with:
 
 ```bibtex
 @misc{vial2025assembler0,
-  title={Assembler 0: A Low Cost Assembly Robot},
+  title={Assembler 0: A Self-Replicating Robot Framework},
   author={Vial, Jack},
   year={2025},
   howpublished={\url{https://github.com/jackvial/assembler0}},
-  note={A low cost assembly robot}
+  note={A Self-Replicating Robot Framework}
 }
 ```
 
