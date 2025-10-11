@@ -1,175 +1,129 @@
-# Assembler 0 - A Self-Replicating Robot Framework
+# Assembler 0 — A Self-Replicating Robot Framework
 
-An open-source, low-cost robot designed for self-replication and self-assembly research. Assembler 0 is a three-arm robot design:
-- **Gripper arm** with magnetic-tipped claw for general manipulation tasks and holding screws
-- **Screwdriver arm** for screwdriving tasks
-- **3D Printer arm** for printing parts (coming soon...)
+*A low-cost, open-source robotics platform for researching progressive self-replication and autonomous assembly.*
 
-The software is built on top of the [LeRobot](https://github.com/lerobot/lerobot) framework and is designed to be fully compatible with the LeRobot ecosystem and tooling.
+Assembler 0 is an experimental starting point for a robotic system that can progressively reproduce portions of its own structure. The framework combines low-cost 3D-printed arms, open-source control software, and imitation-learning datasets to explore **partial self-replication** — where structural components can be reproduced internally while relying on externally supplied electronics, actuators, and power.
 
-The hardware for both arms is based on a modified version of the [Alexander Koch Low Cost Robot](https://github.com/AlexanderKoch-Koch/low_cost_robot).
+## Overview
 
-<img src="packages/assembler0-robot/media/bimanual_teleop.png" width="100%" alt="Bimanual teleoperation">
+Inspired by the self-replicating machine concepts first proposed by **John von Neumann** and later developed by Freitas and others to macro-kinematic systems[^1], this project builds on recent advances in robotic learning and additive manufacturing. While earlier efforts like the **RepRap Project** achieved partial material replication but not assembly[^2], today's technologies enable new possibilities: policies like ACT[^3] and HIL-SERL[^4] support dexterous manipulation, low-cost 3D-printed robot arms have become accessible, 6DOF robot end-effector-based 3D printing[^5] allows printing complex parts directly from an arm, and tool-using LLMs following the ReACT[^6] paradigm offer high-level reasoning and planning capabilities.
 
-<img src="packages/assembler0-simulator/media/bimanual_sim.png" width="100%" alt="Bimanual simulation">
+Rather than aiming for full self-replication, Assembler 0 provides a **research and prototyping framework** to study how mechanical, informational, and manufacturing processes can progressively transition from exogenous (externally supplied) to endogenous (internally produced) components.
 
-[Bimanual teleoperation video](https://www.youtube.com/shorts/4DqAzY_f3EI)
+## System Architecture
 
-## Screwdriver Robot Arm Quick Start Guide
-### TL;DR
-- Update and run `./calibrate.sh`
-- Update and run `./teleoperate.sh`
-- Update and run `./record.sh`
+### Hardware
 
-### Step 1: Prerequisites
-- Python 3.10+
-- UV package manager: `curl -LsSf https://astral.sh/uv/install.sh | sh`
+A modular three-arm setup based on open, 3D-printable designs:
+- **SO101 Gripper Arm** — General assembly manipulation tasks
+- **SO101 Screwdriver Arm** — Assembly tasks requiring screwdriving
+- **SO101 3D Printer Arm** — For replication of printable structural components *(coming soon)*
+- **Bimanual Configuration** — Coordinated teleoperation of gripper and screwdriver arms for complex assembly tasks. The printer arm will operate via preprogrammed G-code tool paths rather than trained policies *(coming soon)*
 
-### Step 2: Installation
+An earlier prototype was based on Koch's *Low-Cost Robot*[^10], but development has since shifted to the SO101 platform for its superior capability, ease of assembly, and growing community adoption.
+
+All printable components and CAD files are available in [`assembler0-hardware`](packages/assembler0-hardware).
+
+### Software
+
+The control stack builds on LeRobot[^8] for exploring imitation learning and reinforcement learning:
+
+- **SO101 Gripper Arm**: Standard gripper control ([implementation](packages/assembler0-robot/src/assembler0_robot/robots/so101_gripper_follower/so101_gripper_follower.py))
+- **SO101 Screwdriver Arm**: Specialized screwdriver manipulation control  ([implementation](packages/assembler0-robot/src/assembler0_robot/robots/so101_screwdriver_follower/so101_screwdriver_follower.py))
+- **SO101 3D Printer Arm**: G-code-based control for additive manufacturing *(coming soon)*
+
+See the [robot package documentation](packages/assembler0-robot/README.md) for API details and usage examples.
+
+### Datasets
+
+Training data for imitation learning are stored in **LeRobot** format:
+
+- [**Screwdriver 391**](https://huggingface.co/datasets/jackvial/screwdriver-391) — 391 demonstrations of screwdriving tasks
+
+Tools for dataset management:
+
+- LeRobot Data Studio[^11] — Merge, clean, and visualize datasets
+- Recording scripts included in the robot package
+
+## Milestone 1
+
+Freitas & Merkle define the concept of closure in *Kinematic Self-Replicating Machines*[^7].
+
+Assembler 0's first research milestone focuses on demonstrating pathways toward partial closure rather than achieving full closure outright.
+
+| Closure Type | Endogenous (internal) | Exogenous (external) |
+|--------------|------------------------|-----------------------|
+| **Material** | 3D-printed structural components | Servo motors, screws, wiring, electronics |
+| **Energy** | None | Wall power / battery supply |
+| **Information/Control** | Autonomous operation via trained policies; preprogrammed 3D-printing toolpaths | Initial training |
+
+**Milestone 1 Goal:**  
+Establish a baseline platform capable of complete *information/control closure* and partial *material closure* through 3D-printed mechanical reproduction.  
+Energy closure is considered out of scope for this phase.
+
+## Quick Start
+
+### 1. Install
+
 ```bash
 # Clone the repository
 git clone https://github.com/jackvial/assembler0
 cd assembler0
 
-# Create a virtual environment with UV
-uv venv
+# Install the UV package manager
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Activate the virtual environment
-source .venv/bin/activate
-
-# Install all packages using UV
+# Create a virtual environment and install dependencies
+uv venv && source .venv/bin/activate
 uv sync
 ```
 
-### Step 3: Building The Hardware
-- Build the base Koch robot see [https://github.com/jess-moss/koch-v1-1](https://github.com/jess-moss/koch-v1-1)
-- Print the screwdriver and wrist camera mount see [assembler0-hardware](packages/assembler0-hardware)
-- Replace the Koch gripper with the modified camera mount and screwdriver bit holder
+### 2. Build Hardware
 
-### Step 4: Calibration
-- Setup the motors and baudrates [LeRobot Koch docs](https://github.com/huggingface/lerobot/blob/main/docs/source/koch.mdx#configure-the-motors) have some good info on this. I personally prefer to use the [Dynamixel Wizard app](https://emanual.robotis.com/docs/en/software/dynamixel/dynamixel_wizard2/) to set the motor baudrate, motor IDs, and test motor connections and positions by turning on and off the Dynamixel motor LEDs.
-- Run `./calibrate.sh` to calibrate the robot. Before running:
-  - Update servo ports in the script (e.g., `/dev/ttyUSB0`)
-  - Set your robot ID (e.g., `my_screwdriver_bot`)
-  - Grant port permissions: `sudo chmod 666 /dev/ttyUSB*`
-- Once the script starts, instructions will be printed to the terminal on how to calibrate the robot. For the screwdriver robot it's important to consider the difference between the leader arm and the follower arm with the screwdriver, the leader arm reset position will mean the screwdriver on the follower is suspended in the air with the bit pointing towards the base motor.
+* Print parts from [assembler0-hardware](packages/assembler0-hardware)
+* Follow the SO101 assembly guide[^9] for base arm construction
 
-### Step 5: Teleoperation
-- Run `./teleoperate.sh`. You'll need to first update the robot port, camera details, and the robot ID. The robot ID is used to identify your calibration file so it should match the ID you used in the calibration script.
-- See LeRobot camera docs [here](https://github.com/huggingface/lerobot/blob/main/docs/source/cameras.mdx) for more info on camera ports.
+### 3. Calibrate & Operate
 
-### Step 6: Record Data
-- Run `./record.sh <run_id> <num_episodes>`
-  - Example: `./record.sh 0 5` records 5 episodes with run ID 0
-  - Update these in the script before running:
-    - Robot port (must match calibration)
-    - Camera indices (see camera detection above)
-    - Dataset repo name (your HuggingFace repo)
-    - Task description (what you're recording)
-- Recommendation - Record small datasets of 5-10 episodes at a time. The torque/current control is not perfect and the screwdriver robot can stall if the screw gets stuck or you try to overtighten the screw. This will cause the record script to error out and the currently isn't a easy way to recover these episodes or continue from where the script errored out.
-- Recommendation - If you make a mistake when recording an episode just leave it in and you can easily remove it later using [LeRobot Data Studio](https://github.com/jackvial/lerobot-data-studio)
-- `batch_encoding_size` is set to num_episodes by default. This means encoding will be done at the end of record rather than after each episode. This makes recording data faster for the human operator.
-- Recommendation - Use [OBS studio](https://obsproject.com/) to adjust your camera positions and angles.
-
-### Step 7: Merging and Cleaning Data
-Your data will likely contain bad episodes where you made a mistake or missed your cue etc... You can use LeRobot Data Studio to merge and clean datasets. See [here](https://github.com/jackvial/lerobot-data-studio). 
-Recommended data cleaning workflow:
-- Merge your smaller datasets using the LeRobot Data Studio merge feature
-- Load the merged dataset into the LeRobot Data Studio data editor and use this to remove the bad episodes
-
-### Step 8: Train a Model
-- Follow [LeRobot's IL training guide](https://github.com/huggingface/lerobot/blob/main/docs/source/il_robots.mdx#train-a-policy)
-- Recommended model: Action Chunking Transformer (ACT)
-- Quick start dataset: [Screwdriver 391](https://huggingface.co/datasets/jackvial/screwdriver-391) (391 curated episodes)
-
-### Step 9: Run Your Trained Policy
-⚠️ **Caution:** This will run the model on real robot hardware. Ensure the workspace is clear and be ready to stop the robot if needed.
-- Run `./inference.sh` after updating:
-  - Model path (local or HuggingFace hub)
-  - Robot port (must match calibration)
-  - Camera indices
-  - Robot ID (must match calibration)
-
-## Assembler 0 System Overview
-
-### Hardware
-The hardware package provides 3D-printable parts and CAD designs for the Assembler 0 robot.
-
-**Key Components:**
-- Screwdriver manipulator with magnetic bit holder
-- Wrist mounted camrea
-- Magnetic gripper attachment for screw handling
-
-**Bill of Materials:**
-- SVPRO 5MP 30FPS USB Camera ($53.99)
-- 6mm × 2mm neodymium magnets (5 pieces)
-- Standard 3D printer filament
-
-See the [Hardware Package README](packages/assembler0-hardware/README.md) for detailed printing instructions and assembly guides.
-
-### LeRobot Integration
-The robot control software provides complete hardware interfaces and control scripts for the Assembler 0 platform.
-
-**Features:**
-- **Robot Implementations:** 
-  - KochScrewdriverFollower: 6-DOF arm with screwdriver attachment
-  - BiKochScrewdriverFollower: Dual-arm configuration
-- **Teleoperation:** Leader-follower control system for data collection
-- **Scripts:** Calibration, teleoperation, recording, and inference
-- **LeRobot Integration:** Full compatibility with LeRobot policies and training
-
-See the [Robot Package README](packages/assembler0-robot/README.md) for setup and usage instructions.
-
-### Simulator
-*Work in progress.*
-A MuJoCo-based physics simulator with browser-based interface for testing and development.
-
-**Features:**
-- Server-side MuJoCo physics simulation
-- Real-time browser-based 3D visualization
-- Multi-camera support with configurable viewpoints
-- Gamepad control interface
-- WebSocket communication for low-latency control
-
-**Requirements:**
-- Linux with NVIDIA GPU (EGL rendering support)
-- Headless rendering capabilities
-
-See the [Simulator Package README](packages/assembler0-simulator/README.md) for installation and usage.
-
-### Datasets
-- [Screwdriver 391](https://huggingface.co/datasets/jackvial/screwdriver_391): 391 curated episodes of screwdriving tasks
-
-# Roadmap
-- [x] Hardware for Koch version of the robot
-- [x] LeRobot integration for Koch version of the robot
-- [x] Hardware for SO101 screwdriver arm
-- [ ] Hardware for the SO101 3D printing arms (coming soon...)
-- [ ] LeRobot integration for SO101 version of the robot
-- [ ] Hardware for SO101 magnetic tipped gripper arm
-- [ ] A dataset of about 600 episodes of Koch + S0101 screwdrivering demonstrations
-- [ ] Eval in simulator e.g. [Evaluating Real-World Robot Manipulation Policies in Simulation](https://arxiv.org/pdf/2405.05941)
-
-## Contributing
-Contributions are welcome! Please feel free to submit issues and pull requests.
-
-## Citation
-
-If you want, you can cite this work with:
-
-```bibtex
-@misc{vial2025assembler0,
-  title={Assembler 0: A Self-Replicating Robot Framework},
-  author={Vial, Jack},
-  year={2025},
-  howpublished={\url{https://github.com/jackvial/assembler0}},
-  note={A Self-Replicating Robot Framework}
-}
+```bash
+./so101_calibrate.sh   # set ports, IDs, permissions
+./so101_teleoperate.sh # run leader–follower teleop
 ```
 
-## License
-This project is open source and available under the [MIT License](LICENSE).
+For camera setup, recording workflow, and dataset cleaning, see the [Robot Package README](packages/assembler0-robot/README.md).
 
-## Acknowledgments
-- [LeRobot](https://github.com/lerobot/lerobot) framework by HuggingFace
-- [Alexander Koch Low Cost Robot](https://github.com/AlexanderKoch-Koch/low_cost_robot) for the base hardware design
+## Roadmap
+
+* [x] Koch-based screwdriver arm hardware
+* [x] Koch-based screwdriver arm LeRobot integration
+* [x] Koch-based gripper arm with magnetic tip hardware
+* [x] Koch-based gripper arm with magnetic tip hardware LeRobot integration
+* [x] Dataset of 290 screwdriving demonstrations (Koch arm)
+* [x] SO101 Screwdriver Arm hardware
+* [x] SO101 Screwdriver Arm LeRobot integration
+* [x] SO101 Gripper Arm hardware (standard arm hardware)
+* [x] SO101 Gripper Arm LeRobot integration (standard SO101 LeRobot integration)
+* [ ] SO101 3D Printer Arm hardware (coming soon)
+* [ ] SO101 3D Printer Arm control software (G-code driven, planned)
+
+## Contributing
+
+Assembler 0 is an open-ended framework intended for collaborative exploration and incremental contribution.
+
+## License
+
+Released under the [MIT License](LICENSE).
+
+## References
+
+[^1]: [Kinematic Self-Replicating Machines (Freitas & Merkle)](https://www.molecularassembler.com/KSRM/3.13.2.2.htm)
+[^2]: [RepRap Project Paper (Jones et al., 2007)](https://reprap.org/mediawiki/images/d/da/Jones-et-al-paper.pdf)
+[^3]: [ACT: Action Chunking with Transformers](https://arxiv.org/abs/2304.13705)
+[^4]: [HIL-SERL: Human-in-the-Loop Robotic Reinforcement Learning](https://hil-serl.github.io/static/hil-serl-paper.pdf)
+[^5]: [6DOF Robot End-Effector-Based 3D Printing](https://www.tandfonline.com/doi/full/10.1080/17452759.2022.2162929?utm_source=chatgpt.com#d1e802)
+[^6]: [ReACT: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/pdf/2210.03629)
+[^7]: [Kinematic Self-Replicating Machines - Closure](https://www.molecularassembler.com/KSRM/5.6.htm)
+[^8]: [LeRobot](https://github.com/huggingface/lerobot)
+[^9]: [SO101 Arm Assembly Guide](https://github.com/TheRobotStudio/SO-ARM100)
+[^10]: [Koch's Low-Cost Robot](https://github.com/AlexanderKoch-Koch/low_cost_robot)
+[^11]: [LeRobot Data Studio](https://github.com/jackvial/lerobot-data-studio)  
