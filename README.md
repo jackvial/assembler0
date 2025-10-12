@@ -120,7 +120,7 @@ Released under the [MIT License](LICENSE).
 [^2]: [RepRap Project Paper (Jones et al., 2007)](https://reprap.org/mediawiki/images/d/da/Jones-et-al-paper.pdf)
 [^3]: [ACT: Action Chunking with Transformers](https://arxiv.org/abs/2304.13705)
 [^4]: [HIL-SERL: Human-in-the-Loop Robotic Reinforcement Learning](https://hil-serl.github.io/static/hil-serl-paper.pdf)
-[^5]: [6DOF Robot End-Effector-Based 3D Printing](https://www.tandfonline.com/doi/full/10.1080/17452759.2022.2162929?utm_source=chatgpt.com#d1e802)
+[^5]: [6DOF Robot End-Effector-Based 3D Printing](https://www.tandfonline.com/doi/full/10.1080/17452759.2022.2162929)
 [^6]: [ReACT: Synergizing Reasoning and Acting in Language Models](https://arxiv.org/pdf/2210.03629)
 [^7]: [Kinematic Self-Replicating Machines - Closure](https://www.molecularassembler.com/KSRM/5.6.htm)
 [^8]: [LeRobot](https://github.com/huggingface/lerobot)
