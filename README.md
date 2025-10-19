@@ -1,4 +1,4 @@
-# Assembler 0 - A Self-Replicating Robot Framework'
+# Assembler 0 - A Self-Replicating Robot Framework
 
 <img src="packages/assembler0-hardware/media/assembler0.jpg" width="100%" alt="Assembler 0">
 
