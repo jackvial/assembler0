@@ -14,10 +14,11 @@ from lerobot.cameras.realsense.configuration_realsense import RealSenseCameraCon
 from assembler0_robot.robots.koch_screwdriver_follower import KochScrewdriverFollower
 from assembler0_robot.robots.koch_screwdriver_follower import KochScrewdriverFollowerConfig
 from assembler0_robot.robots.koch_follower import KochFollower, KochFollowerConfig
+from assembler0_robot.robots.so101_screwdriver_follower import SO101ScrewdriverFollower, SO101ScrewdriverFollowerConfig
+from assembler0_robot.robots.so101_follower import SO101Follower, SO101FollowerConfig
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeader
 from assembler0_robot.teleoperators.koch_screwdriver_leader import KochScrewdriverLeaderConfig
 from assembler0_robot.teleoperators.koch_leader import KochLeader, KochLeaderConfig
-from assembler0_robot.robots.so101_screwdriver_follower import SO101ScrewdriverFollower, SO101ScrewdriverFollowerConfig
 from assembler0_robot.teleoperators.so101_screwdriver_leader import SO101ScrewdriverLeader, SO101ScrewdriverLeaderConfig
 
 
@@ -27,8 +28,8 @@ def main():
     # Device configuration
     parser.add_argument("--device_type", type=str, choices=["robot", "follower", "leader", "teleop"],
                        required=True, help="Type of device to calibrate")
-    parser.add_argument("--robot_variant", type=str, choices=["screwdriver", "koch", "so101"], default="screwdriver",
-                       help="Robot variant: 'screwdriver' for screwdriver arms, 'koch' for regular Koch arms, 'so101' for So101 arms")
+    parser.add_argument("--robot_variant", type=str, choices=["screwdriver", "koch", "so101", "so101_follower"], default="screwdriver",
+                       help="Robot variant: 'screwdriver' for screwdriver arms, 'koch' for regular Koch arms, 'so101' for So101 screwdriver arms, 'so101_follower' for So101 follower arms")
     parser.add_argument("--port", type=str, required=True,
                        help="Serial port for the device")
     parser.add_argument("--device_id", type=str, required=True,
@@ -87,6 +88,17 @@ def main():
                     cameras={},  # No cameras needed for calibration
                 )
                 device = SO101ScrewdriverFollower(robot_config)
+                
+            elif args.robot_variant == "so101_follower":
+                logger.info("Calibrating so101_follower robot (follower)...")
+                
+                # Create robot config and instance (no cameras needed for calibration)
+                robot_config = SO101FollowerConfig(
+                    port=args.port,
+                    id=args.device_id,
+                    cameras={},  # No cameras needed for calibration
+                )
+                device = SO101Follower(robot_config)
                 
             else:  # koch variant
                 logger.info("Calibrating Koch robot (follower)...")
