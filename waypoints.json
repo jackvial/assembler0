@@ -1,0 +1,26 @@
+[
+  {
+    "shoulder_pan.pos": -30.99,
+    "shoulder_lift.pos": 52.77,
+    "elbow_flex.pos": -14.08,
+    "wrist_flex.pos": 72.2,
+    "wrist_roll.pos": -25.01,
+    "gripper.pos": 3.74
+  },
+  {
+    "shoulder_pan.pos": 42.76,
+    "shoulder_lift.pos": 17.49,
+    "elbow_flex.pos": 32.21,
+    "wrist_flex.pos": 55.52,
+    "wrist_roll.pos": -10.79,
+    "gripper.pos": 3.68
+  },
+  {
+    "shoulder_pan.pos": -30.99,
+    "shoulder_lift.pos": 52.77,
+    "elbow_flex.pos": -14.08,
+    "wrist_flex.pos": 72.2,
+    "wrist_roll.pos": -25.01,
+    "gripper.pos": 3.74
+  }
+]

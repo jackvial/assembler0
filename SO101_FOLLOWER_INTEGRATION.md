@@ -31,6 +31,8 @@ A standalone demo script that moves the SO101Follower through preprogrammed wayp
 **New Files:**
 - `demo_so101_follower.py` - Main demo script
 - `demo_so101_follower.sh` - Helper shell script for easy execution
+- `find_home_position.py` - Script to find home/waypoint positions manually
+- `find_home_position.sh` - Helper script for position finding
 - `example_waypoints.json` - Example custom waypoints file
 - `so101_follower_calibrate.sh` - Helper script for calibration
 
@@ -44,6 +46,24 @@ A standalone demo script that moves the SO101Follower through preprogrammed wayp
 - Graceful shutdown on Ctrl+C
 
 ## Usage Examples
+
+### Finding Home/Waypoint Positions
+
+Before running demos, you may want to find good positions for your robot:
+
+```bash
+# Run the position finder
+./find_home_position.sh
+
+# The robot torque will be disabled - manually move the arm
+# Press Ctrl+C when you've positioned it where you want
+# The script will output the position in both Python dict and JSON formats
+```
+
+This tool is useful for:
+- Finding a safe home position
+- Creating custom waypoints for your demos
+- Determining joint limits for your specific robot
 
 ### Basic Demo with Built-in Waypoints
 ```bash
@@ -150,15 +170,25 @@ The SO101Follower has the following motors:
 3. **Watch the robot move** through the preprogrammed waypoints
 4. **Press Ctrl+C** to stop at any time
 
-### Creating Custom Movements
-1. **Create a waypoints file** based on `example_waypoints.json`
-2. **Test your waypoints:**
+### Finding Home Position / Creating Custom Waypoints
+1. **Use the position finder tool** to manually position the arm:
+   ```bash
+   ./find_home_position.sh
+   ```
+   - The robot torque will be disabled
+   - Manually move the arm to your desired position
+   - Press Ctrl+C to save and display the position
+   - Copy the displayed position values
+
+2. **Create a waypoints file** based on `example_waypoints.json` with your saved positions
+
+3. **Test your waypoints:**
    ```bash
    python demo_so101_follower.py \
        --port /dev/ttyACM0 \
        --waypoints_file my_waypoints.json
    ```
-3. **Adjust timing** if needed with `--wait_time` and `--fps` parameters
+4. **Adjust timing** if needed with `--wait_time` and `--fps` parameters
 
 ## Safety Notes
 

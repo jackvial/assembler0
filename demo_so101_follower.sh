@@ -8,6 +8,9 @@ PORT="${PORT:-/dev/ttyACM0}"
 ROBOT_ID="${ROBOT_ID:-assembler0_so101_follower}"
 FPS="${FPS:-30}"
 WAIT_TIME="${WAIT_TIME:-2.0}"
+SPEED_DEG_S="${SPEED_DEG_S:-20.0}"
+ACCEL_DEG_S2="${ACCEL_DEG_S2:-50.0}"
+BLEND_MS="${BLEND_MS:-200}"
 
 # Show usage
 if [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
@@ -31,6 +34,10 @@ python demo_so101_follower.py \
     --port "$PORT" \
     --robot_id "$ROBOT_ID" \
     --fps "$FPS" \
+    --speed_deg_s "$SPEED_DEG_S" \
+    --accel_deg_s2 "$ACCEL_DEG_S2" \
+    --blend_ms "$BLEND_MS" \
     --wait_time "$WAIT_TIME" \
+    --waypoints_file "waypoints.json" \
     "$@"
 
