@@ -11,6 +11,8 @@ authors = [
 dependencies = [
     "drex",
     "assembler0-robot",
+    "ikpy>=3.3",
+    "scipy>=1.10",
 ]
 
 [project.scripts]

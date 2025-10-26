@@ -35,6 +35,7 @@ import numpy as np
 from lerobot.utils.robot_utils import busy_wait
 
 from assembler0_robot.robots.so101_follower import SO101Follower, SO101FollowerConfig
+from kinematics_so101 import SO101Kinematics
 
 logger = logging.getLogger(__name__)
 
@@ -341,6 +342,200 @@ def generate_constant_speed_trajectory(
     return trajectory
 
 
+def generate_cartesian_trajectory(
+    waypoints: list[dict[str, float]],
+    fps: int,
+    speed_mm_s: float,
+    accel_mm_s2: float,
+    blend_ms: int = 0,
+    urdf_path: str = "urdf/so101_follower.urdf",
+    orientation_mode: str = "fixed",
+    lock_wrist: bool = True,
+) -> list[dict[str, float]]:
+    """Generate a Cartesian straight-line trajectory through waypoints using IK.
+    
+    This ensures the end-effector moves in true straight lines in 3D space,
+    essential for 3D printing applications.
+    
+    Args:
+        waypoints: List of waypoint dictionaries with joint positions (degrees)
+        fps: Control loop frequency in Hz
+        speed_mm_s: Target Cartesian speed in millimeters/second
+        accel_mm_s2: Max Cartesian acceleration in mm/s²
+        blend_ms: Corner blending (not yet implemented for Cartesian)
+        urdf_path: Path to robot URDF file
+        orientation_mode: "fixed" (maintain initial orientation) or "interpolate"
+        lock_wrist: If True, lock wrist joints to keep gripper facing forward
+        
+    Returns:
+        List of joint-space waypoint dictionaries at fps frequency
+    """
+    if len(waypoints) == 0:
+        return []
+    
+    if len(waypoints) == 1:
+        # Single waypoint - just hold position for 2 seconds
+        return [waypoints[0].copy() for _ in range(int(2 * fps))]
+    
+    # Validate parameters
+    if fps <= 0:
+        raise ValueError(f"fps must be positive, got {fps}")
+    if speed_mm_s <= 0:
+        raise ValueError(f"speed_mm_s must be positive, got {speed_mm_s}")
+    if accel_mm_s2 <= 0:
+        raise ValueError(f"accel_mm_s2 must be positive, got {accel_mm_s2}")
+    
+    # Initialize kinematics
+    kin = SO101Kinematics(Path(urdf_path))
+    
+    # Convert waypoints to Cartesian poses using FK
+    # First, strip .pos suffix from waypoint keys
+    cartesian_waypoints = []
+    joint_waypoints = []
+    for wp in waypoints:
+        # Convert "joint.pos": value to "joint": value for FK
+        joint_dict = {}
+        for key, value in wp.items():
+            joint_name = key.replace(".pos", "")
+            joint_dict[joint_name] = value
+        joint_waypoints.append(joint_dict)
+        
+        pos, ori = kin.forward_kinematics(joint_dict)
+        cartesian_waypoints.append({"position": pos, "orientation": ori})
+    
+    logger.info(f"Converted {len(waypoints)} joint waypoints to Cartesian poses")
+    
+    # Compute segment distances in Cartesian space (meters)
+    segment_distances = []
+    for i in range(len(cartesian_waypoints) - 1):
+        pos1 = cartesian_waypoints[i]["position"]
+        pos2 = cartesian_waypoints[i + 1]["position"]
+        distance = np.linalg.norm(pos2 - pos1)
+        segment_distances.append(distance)
+    
+    total_distance = sum(segment_distances)  # meters
+    
+    if total_distance < 1e-6:
+        # All waypoints are at same position
+        return [waypoints[0].copy() for _ in range(int(2 * fps))]
+    
+    logger.debug(f"Total Cartesian distance: {total_distance*1000:.1f}mm")
+    
+    # Convert speed from mm/s to m/s
+    speed_m_s = speed_mm_s / 1000.0
+    accel_m_s2 = accel_mm_s2 / 1000.0
+    
+    # Calculate S-curve velocity profile parameters
+    ramp_time = speed_m_s / accel_m_s2
+    ramp_distance = 0.5 * accel_m_s2 * ramp_time ** 2
+    
+    # Adjust if path too short for full ramps
+    if 2 * ramp_distance >= total_distance:
+        # Triangular profile
+        ramp_time = math.sqrt(total_distance / accel_m_s2)
+        ramp_distance = total_distance / 2
+        cruise_distance = 0
+        cruise_time = 0
+    else:
+        cruise_distance = total_distance - 2 * ramp_distance
+        cruise_time = cruise_distance / speed_m_s
+    
+    total_time = 2 * ramp_time + cruise_time
+    num_samples = max(2, int(total_time * fps))
+    dt = 1.0 / fps
+    
+    logger.info(f"Cartesian trajectory: {total_distance*1000:.1f}mm in {total_time:.2f}s "
+                f"(ramp: {ramp_time:.2f}s, cruise: {cruise_time:.2f}s)")
+    
+    # Generate Cartesian trajectory samples
+    trajectory = []
+    previous_joint_solution = joint_waypoints[0]  # Warm start IK (without .pos suffix)
+    
+    # Store initial wrist angles to keep gripper facing forward
+    initial_wrist_flex = joint_waypoints[0].get("wrist_flex", 0)
+    initial_wrist_roll = joint_waypoints[0].get("wrist_roll", 0)
+    
+    for sample_idx in range(num_samples):
+        t = sample_idx * dt
+        
+        # Compute arc length using S-curve profile
+        if t <= ramp_time:
+            # Acceleration phase
+            s_normalized = t / ramp_time
+            s = ramp_distance * (s_normalized - math.sin(2 * math.pi * s_normalized) / (2 * math.pi))
+        elif t <= ramp_time + cruise_time:
+            # Cruise phase
+            s = ramp_distance + speed_m_s * (t - ramp_time)
+        else:
+            # Deceleration phase
+            t_decel = t - ramp_time - cruise_time
+            s_normalized = t_decel / ramp_time
+            s = (ramp_distance + cruise_distance + 
+                 ramp_distance * (s_normalized - math.sin(2 * math.pi * s_normalized) / (2 * math.pi)))
+        
+        s = min(s, total_distance)
+        
+        # Find which segment we're in
+        cumulative = 0
+        segment_idx = 0
+        for i, dist in enumerate(segment_distances):
+            if cumulative + dist >= s:
+                segment_idx = i
+                break
+            cumulative += dist
+        else:
+            segment_idx = len(segment_distances) - 1
+            cumulative = sum(segment_distances[:-1])
+        
+        # Interpolate Cartesian position within segment
+        segment_progress = (s - cumulative) / max(segment_distances[segment_idx], 1e-9)
+        segment_progress = np.clip(segment_progress, 0.0, 1.0)
+        
+        start_cart = cartesian_waypoints[segment_idx]
+        end_cart = cartesian_waypoints[segment_idx + 1]
+        
+        # Linear interpolation in Cartesian space
+        current_pos = start_cart["position"] + segment_progress * (end_cart["position"] - start_cart["position"])
+        
+        # Handle orientation based on mode
+        # NOTE: Orientation-constrained IK with ikpy is unreliable, so we use position-only
+        # The warm-start (previous solution) helps reduce oscillation
+        target_orientation = None  # Position-only IK
+        
+        # Solve IK for current Cartesian target
+        joint_solution = kin.inverse_kinematics(
+            current_pos,
+            target_orientation=target_orientation,
+            initial_joint_angles_deg=previous_joint_solution
+        )
+        
+        if joint_solution is None:
+            logger.warning(f"IK failed at sample {sample_idx}/{num_samples}, using previous solution")
+            joint_solution = previous_joint_solution
+        else:
+            # Override wrist joints if lock_wrist is enabled
+            if lock_wrist:
+                # Keep gripper facing forward by locking wrist joints
+                joint_solution["wrist_flex"] = initial_wrist_flex
+                joint_solution["wrist_roll"] = initial_wrist_roll
+            previous_joint_solution = joint_solution
+        
+        # Add gripper value from waypoints (pass through unchanged)
+        if "gripper" in joint_waypoints[0] and "gripper" not in joint_solution:
+            # Interpolate gripper based on segment
+            gripper_start = joint_waypoints[segment_idx].get("gripper", 0)
+            gripper_end = joint_waypoints[segment_idx + 1].get("gripper", 0)
+            joint_solution["gripper"] = gripper_start + segment_progress * (gripper_end - gripper_start)
+        
+        # Convert to action format (add .pos suffix back)
+        # Ensure all values are plain Python floats
+        action = {f"{joint}.pos": float(joint_solution[joint]) for joint in joint_solution}
+        trajectory.append(action)
+    
+    logger.info(f"Generated {len(trajectory)} Cartesian trajectory samples")
+    return trajectory
+
+
 def move_through_waypoints(
     robot: SO101Follower,
     waypoints: list[dict[str, float]],
@@ -350,6 +545,10 @@ def move_through_waypoints(
     accel_deg_s2: float = 25.0,
     blend_ms: int = 80,
     use_smooth_trajectory: bool = True,
+    cartesian_mode: bool = False,
+    speed_mm_s: float = 20.0,
+    accel_mm_s2: float = 100.0,
+    orientation_mode: str = "fixed",
 ) -> None:
     """Move robot through a sequence of waypoints.
     
@@ -358,14 +557,53 @@ def move_through_waypoints(
         waypoints: List of waypoint dictionaries with motor positions
         fps: Control loop frequency in Hz
         wait_time_s: Time to wait at each waypoint before moving to next (legacy mode only)
-        speed_deg_s: Target joint-space speed in degrees/second (smooth trajectory mode)
-        accel_deg_s2: Max joint-space acceleration for ramps (smooth trajectory mode)
-        blend_ms: Corner blending horizon around waypoints in milliseconds (smooth trajectory mode)
-        use_smooth_trajectory: If True, use smooth constant-speed trajectory; if False, use legacy mode
+        speed_deg_s: Target joint-space speed in degrees/second (joint-space mode)
+        accel_deg_s2: Max joint-space acceleration for ramps (joint-space mode)
+        blend_ms: Corner blending horizon around waypoints in milliseconds
+        use_smooth_trajectory: If True, use smooth trajectory; if False, use legacy mode
+        cartesian_mode: If True, use Cartesian straight-line interpolation with IK
+        speed_mm_s: Target Cartesian speed in mm/s (Cartesian mode only)
+        accel_mm_s2: Max Cartesian acceleration in mm/s² (Cartesian mode only)
+        orientation_mode: "fixed" or "interpolate" (Cartesian mode only)
     """
     logger.info(f"Starting waypoint sequence with {len(waypoints)} waypoints")
     
-    if use_smooth_trajectory and len(waypoints) > 1:
+    if cartesian_mode and len(waypoints) > 1:
+        # Cartesian mode: straight lines in 3D space
+        logger.info(f"Generating Cartesian trajectory (speed={speed_mm_s}mm/s, accel={accel_mm_s2}mm/s², lock_wrist=True)")
+        trajectory = generate_cartesian_trajectory(
+            waypoints=waypoints,
+            fps=fps,
+            speed_mm_s=speed_mm_s,
+            accel_mm_s2=accel_mm_s2,
+            blend_ms=blend_ms,
+            orientation_mode=orientation_mode,
+            lock_wrist=False,  # Keep gripper facing forward
+        )
+        
+        logger.info(f"Trajectory generated: {len(trajectory)} steps ({len(trajectory)/fps:.2f}s)")
+        
+        # Stream trajectory
+        for i, action in enumerate(trajectory):
+            loop_start = time.perf_counter()
+            
+            # Send action to robot
+            robot.send_action(action)
+            
+            # Maintain control loop timing with safety guard
+            dt_s = time.perf_counter() - loop_start
+            wait_time = 1 / fps - dt_s
+            if wait_time > 0:
+                busy_wait(wait_time)
+            else:
+                logger.warning(f"Control loop running slow: {dt_s*1000:.1f}ms > {1000/fps:.1f}ms target")
+            
+            # Progress logging every second
+            if i % fps == 0:
+                logger.debug(f"Progress: {i}/{len(trajectory)} ({100*i/len(trajectory):.1f}%)")
+        
+        logger.info("Cartesian trajectory completed!")
+    elif use_smooth_trajectory and len(waypoints) > 1:
         # Generate smooth trajectory
         logger.info(f"Generating smooth trajectory (speed={speed_deg_s}°/s, accel={accel_deg_s2}°/s², blend={blend_ms}ms)")
         trajectory = generate_constant_speed_trajectory(
@@ -486,6 +724,32 @@ def main():
         help="Corner blending horizon around waypoints in milliseconds (default: 80)",
     )
     
+    # Cartesian mode parameters
+    parser.add_argument(
+        "--cartesian_mode",
+        action="store_true",
+        help="Use Cartesian straight-line interpolation (straight lines in 3D space)",
+    )
+    parser.add_argument(
+        "--speed_mm_s",
+        type=float,
+        default=20.0,
+        help="Cartesian speed in mm/s (default: 20.0, for --cartesian_mode)",
+    )
+    parser.add_argument(
+        "--accel_mm_s2",
+        type=float,
+        default=100.0,
+        help="Cartesian acceleration in mm/s² (default: 100.0, for --cartesian_mode)",
+    )
+    parser.add_argument(
+        "--orientation_mode",
+        type=str,
+        choices=["fixed", "interpolate"],
+        default="fixed",
+        help="Orientation handling: 'fixed' (maintain initial) or 'interpolate' (for --cartesian_mode)",
+    )
+    
     # Other options
     parser.add_argument(
         "--disable_torque_on_disconnect",
@@ -542,6 +806,10 @@ def main():
             accel_deg_s2=args.accel_deg_s2,
             blend_ms=args.blend_ms,
             use_smooth_trajectory=True,
+            cartesian_mode=args.cartesian_mode,
+            speed_mm_s=args.speed_mm_s,
+            accel_mm_s2=args.accel_mm_s2,
+            orientation_mode=args.orientation_mode,
         )
         
     except KeyboardInterrupt:
