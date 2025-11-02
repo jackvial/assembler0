@@ -1,0 +1,4 @@
+Robotic Arm turned into a 3D Printer (Inverse Kinematics) by 3djled on Thingiverse: https://www.thingiverse.com/thing:3846234
+
+Summary:
+New Update 2021 : I added Endstop, Homing &amp; CalibrationMarlin update 2021 in "Thing files"Here is my re-mix on the excellent F.Tobler robot arms. Most of the files are the same :https://www.thingiverse.com/thing:1718984I use Arduino Mega 2560 with Ramps 1.4 &amp; Marlin Firmware with Inverse Kinematics (I.K.) included.https://www.youtube.com/watch?v=xLW9dskR66wInverse Kinematics is included in marlin_main.New : https://youtu.be/LpSv128tdukNew : https://youtu.be/t-SQj9KiAq8New : https://youtu.be/qd-OGas5kDQNew : https://youtu.be/-mjkH2vtYh0New : Fully compatible with (see instructions) : https://www.20sffactory.com/robot/resourceJust add a "macro" in Pronterface or Repetier with name "Home" :M84G28 X YG95G1 F1000 X-52 Y-27G94G93 X90 Y0 Z0G1 Z0

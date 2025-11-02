@@ -146,6 +146,7 @@ wandb_downloads/
 !**/media/*.png
 !**/media/*.jpg
 !**/media/*.jpeg
+!**/stl/*.gif
 
 # IDE files
 .vscode/
