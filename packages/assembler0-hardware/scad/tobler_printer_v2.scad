@@ -2,22 +2,28 @@
 // ========================= Parameters =========================
 // Wrist roll dimensions
 wrist_width = 46;
-wrist_depth = 38;
+wrist_depth = 33;
 wrist_origin_x = -wrist_width/2;  // Calculated to center assembly around x=0
 wrist_origin_y = -15;
 
 // Extruder mounting dimensions
-extruder_offset_from_front = 5;
+extruder_unit_offset_from_front = 10;
+extruder_screw_spacing = 9.5; // distance from center
+extruder_front_row_offset = 8;
+extruder_back_row_offset = 18;
 extruder_center_hole_radius = 3;
 extruder_cradle_thickness = 10;
 extruder_cradle_height = 60;
+extruder_screw_spacing = 9.5; // distance from center
+extruder_mount_screw_hole_radius = 1.6;
+screw_holes_height = 12;
 
 // Hotend mounting dimensions
-hotend_cradle_width = 25;
+hotend_cradle_width = 46;
 hotend_hole_radius = 6.5;
 hotend_hex_radius = 10;
 hotend_cradle_thickness = 8;
-screw_access_hole_radius = 2.4;
+screw_access_hole_radius = 2.8;
 
 // Boolean difference offset
 boolean_offset = -0.1;
@@ -34,28 +40,30 @@ module wrist_roll() {
         cube([wrist_width, wrist_depth, extruder_cradle_thickness]);
         
         // Extruder to hotend hole for filament
-        translate([wrist_width/2, wrist_depth - (5 + extruder_offset_from_front), boolean_offset]) {
+        translate([wrist_width/2, wrist_depth - (5 + extruder_unit_offset_from_front), boolean_offset]) {
             cylinder(h=11, r=extruder_center_hole_radius);
         }
+        
+        
 
         // can add these back for additional extruder support but might not be needed and simplifies design and assembly not having them
         // Front row of screw holes
-        // translate([(wrist_width/2) - extruder_screw_spacing, wrist_depth - (extruder_front_row_offset + extruder_offset_from_front), boolean_offset]) {
-        //     cylinder(h=4, r=screw_hole_radius);
-        // }
+        translate([(wrist_width/2) - extruder_screw_spacing, wrist_depth - (extruder_front_row_offset + extruder_unit_offset_from_front), boolean_offset]) {
+            cylinder(h=screw_holes_height, r=extruder_mount_screw_hole_radius);
+        }
 
-        // translate([(wrist_width/2) + extruder_screw_spacing, wrist_depth - (extruder_front_row_offset + extruder_offset_from_front), boolean_offset]) {
-        //     cylinder(h=4, r=screw_hole_radius);
-        // }
+        translate([(wrist_width/2) + extruder_screw_spacing, wrist_depth - (extruder_front_row_offset + extruder_unit_offset_from_front), boolean_offset]) {
+            cylinder(h=screw_holes_height, r=extruder_mount_screw_hole_radius);
+        }
 
-        // // Back row of screw holes
-        // translate([(wrist_width/2) - extruder_screw_spacing, wrist_depth - (extruder_back_row_offset + extruder_offset_from_front), boolean_offset]) {
-        //     cylinder(h=4, r=screw_hole_radius);
-        // }
+        // Back row of screw holes
+        translate([(wrist_width/2) - extruder_screw_spacing, wrist_depth - (extruder_back_row_offset + extruder_unit_offset_from_front), boolean_offset]) {
+            cylinder(h=screw_holes_height, r=extruder_mount_screw_hole_radius);
+        }
 
-        // translate([(wrist_width/2) + extruder_screw_spacing, wrist_depth - (extruder_back_row_offset + extruder_offset_from_front), boolean_offset]) {
-        //     cylinder(h=4, r=screw_hole_radius);
-        // }
+        translate([(wrist_width/2) + extruder_screw_spacing, wrist_depth - (extruder_back_row_offset + extruder_unit_offset_from_front), boolean_offset]) {
+            cylinder(h=screw_holes_height, r=extruder_mount_screw_hole_radius);
+        }
     }
   }
 
@@ -64,14 +72,26 @@ module wrist_roll() {
   translate([-hotend_cradle_width/2, wrist_origin_y, 82]) {
     hole_height = 12;
     difference() {
-        cube([hotend_cradle_width, wrist_depth, hotend_cradle_thickness]);
+        union() {
+            cube([hotend_cradle_width, wrist_depth, hotend_cradle_thickness]);
+            
+            // Side wall 1
+            translate([0, 0, -12]) {
+                cube([10.5, wrist_depth, 12]);
+            }
+            
+            // Side wall 2
+            translate([hotend_cradle_width - 10.5, 0, -12]) {   
+                cube([10.5, wrist_depth, 12]);
+            }
+        }
 
         // Cut away for screwdriver access
         // translate([wrist_width/2, 0, boolean_offset]) {
         //     cylinder(h=hotend_cradle_thickness + 1, r=mount_screw_access_cutaway);
         // }
 
-        translate([hotend_cradle_width/2, wrist_depth - (5 + extruder_offset_from_front), boolean_offset]) {
+        translate([hotend_cradle_width/2, wrist_depth - (5 + extruder_unit_offset_from_front), boolean_offset]) {
 
             // Hotend attachment hole
             cylinder(h=hole_height, r=hotend_hole_radius);
@@ -80,32 +100,38 @@ module wrist_roll() {
             cylinder(h=2, r=hotend_hex_radius, $fn=6);
         }
 
-        // can add these back for additional extruder support but might not be needed and simplifies design and assembly not having them
-        // Access holes for the extruder cradle attachment
-        // Front row of screw holes
-        // translate([(wrist_width/2) - extruder_screw_spacing, wrist_depth - (extruder_front_row_offset + extruder_offset_from_front), boolean_offset]) {
-        //     cylinder(h=hole_height, r=screw_access_hole_radius);
-        // }
 
-        // translate([(wrist_width/2) + extruder_screw_spacing, wrist_depth - (extruder_front_row_offset + extruder_offset_from_front), boolean_offset]) {
-        //     cylinder(h=hole_height, r=screw_access_hole_radius);
-        // }
-
-        // // Back row of screw holes
-        // translate([(wrist_width/2) - extruder_screw_spacing, wrist_depth - (extruder_back_row_offset + extruder_offset_from_front), boolean_offset]) {
-        //     cylinder(h=hole_height, r=screw_access_hole_radius);
-        // }
-
-        // translate([(wrist_width/2) + extruder_screw_spacing, wrist_depth - (extruder_back_row_offset + extruder_offset_from_front), boolean_offset]) {
-        //     cylinder(h=hole_height, r=screw_access_hole_radius);
-        // }
+        // Cut holes through the hotend cradle for access to the extruder mount screw holes
+        // Both the extruder and hotend are centered at global x=0
+        // The extruder screw holes are at ±extruder_screw_spacing from this center
+        // In hotend cradle local coordinates, x=0 is at hotend_cradle_width/2
+        
+        center_x = hotend_cradle_width/2;  // This is where global x=0 is in hotend cradle coords
+        
+        // Front row access holes
+        translate([center_x - extruder_screw_spacing, wrist_depth - (extruder_front_row_offset + extruder_unit_offset_from_front), boolean_offset]) {
+            cylinder(h=hotend_cradle_thickness + 1, r=screw_access_hole_radius);
+        }
+        
+        translate([center_x + extruder_screw_spacing, wrist_depth - (extruder_front_row_offset + extruder_unit_offset_from_front), boolean_offset]) {
+            cylinder(h=hotend_cradle_thickness + 1, r=screw_access_hole_radius);
+        }
+        
+        // Back row access holes
+        translate([center_x - extruder_screw_spacing, wrist_depth - (extruder_back_row_offset + extruder_unit_offset_from_front), boolean_offset]) {
+            cylinder(h=hotend_cradle_thickness + 1, r=screw_access_hole_radius);
+        }
+        
+        translate([center_x + extruder_screw_spacing, wrist_depth - (extruder_back_row_offset + extruder_unit_offset_from_front), boolean_offset]) {
+            cylinder(h=hotend_cradle_thickness + 1, r=screw_access_hole_radius);
+        }
     }
   }
 }
 
 module extruder_placeholder() {
     rotate([90, 90, 0]) {
-        translate([-60, -$extruder_width/2, -23]) {
+        translate([-60, -$extruder_width/2, -(20 - extruder_unit_offset_from_front) ]) {
             cube([$extruder_width, $extruder_width, 24]);
             translate([38/2, 38/2, 24]) {
                 cylinder(h=19, r=18);
@@ -115,7 +141,7 @@ module extruder_placeholder() {
 }
 
 module hotend_placeholder() {
-    translate([0, 12.5, 79]) {
+    translate([0, extruder_unit_offset_from_front - 6, 79]) {
         cylinder(h=11, r=hotend_hole_radius);
         translate([0, 0, 11]) {
             cylinder(h=24, r=10);
@@ -135,15 +161,9 @@ module hotend_placeholder() {
     }
 }
 
-// TODO 
-// - Create screw holes in extruder cradle
-// - Connect extruder cradle to hotend cradle
-// - Add better clearance for arm connection bolts and probably balance the manipulator better
 module main() {
-  // stl/sos101_screwdriver_wrist_roll.stl
-  
-  // import packages/assembler0-hardware/stl/ftobler_arm/files/gripperBase.stl
   translate([0, 0, 60]) {
+    // TODO - cut counter sunk hex holes from the top of this part for the nuts so we can easily screw the bolts in from the bottom
     difference() {
         import("../stl/ftobler_arm/files/gripperBase.stl");
         translate([-50, -15, -5]) {
