@@ -86,11 +86,6 @@ module wrist_roll() {
             }
         }
 
-        // Cut away for screwdriver access
-        // translate([wrist_width/2, 0, boolean_offset]) {
-        //     cylinder(h=hotend_cradle_thickness + 1, r=mount_screw_access_cutaway);
-        // }
-
         translate([hotend_cradle_width/2, wrist_depth - (5 + extruder_unit_offset_from_front), boolean_offset]) {
 
             // Hotend attachment hole
@@ -163,11 +158,25 @@ module hotend_placeholder() {
 
 module main() {
   translate([0, 0, 60]) {
-    // TODO - cut counter sunk hex holes from the top of this part for the nuts so we can easily screw the bolts in from the bottom
     difference() {
         import("../stl/ftobler_arm/files/gripperBase.stl");
         translate([-50, -15, -5]) {
           cube([100, 50, 20]);
+        }
+        
+        // Hex nut hole 1
+        translate([-15, -19, -0.1]) {
+            cylinder(h=3, r=4, $fn=6);
+        }
+        
+        // Hex nut hole 2
+        translate([15, -19, -0.1]) {
+            cylinder(h=3, r=4, $fn=6);
+        }
+        
+        // Hex nut hole center
+        translate([0, -19, -0.1]) {
+            cylinder(h=3, r=4, $fn=6);
         }
     }
   }
