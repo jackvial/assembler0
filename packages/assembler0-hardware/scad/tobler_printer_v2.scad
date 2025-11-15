@@ -1,3 +1,4 @@
+include <BOSL2/std.scad>
 
 // ========================= Parameters =========================
 // Wrist roll dimensions
@@ -29,7 +30,7 @@ screw_access_hole_radius = 2.8;
 boolean_offset = -0.1;
 
 $fn = 64; // global smoothness for all circular geometry
-$render_vitamines = true;
+$render_vitamines = false;
 $extruder_width = 38;
 
 module wrist_roll() {
@@ -37,7 +38,7 @@ module wrist_roll() {
   // Extruder cradle
   translate([-wrist_width/2, wrist_origin_y, extruder_cradle_height]) {
     difference() {
-        cube([wrist_width, wrist_depth, extruder_cradle_thickness]);
+        cuboid([wrist_width, wrist_depth, extruder_cradle_thickness], anchor=FRONT+LEFT+BOTTOM, rounding=2, except=[TOP, FRONT]);
         
         // Extruder to hotend hole for filament
         translate([wrist_width/2, wrist_depth - (5 + extruder_unit_offset_from_front), boolean_offset]) {
@@ -73,16 +74,16 @@ module wrist_roll() {
     hole_height = 12;
     difference() {
         union() {
-            cube([hotend_cradle_width, wrist_depth, hotend_cradle_thickness]);
+            cuboid([hotend_cradle_width, wrist_depth, hotend_cradle_thickness], anchor=FRONT+LEFT+BOTTOM, rounding=2, except=[BOTTOM, FRONT]);
             
             // Side wall 1
             translate([0, 0, -12]) {
-                cube([10.5, wrist_depth, 12]);
+                cuboid([10.5, wrist_depth, 12], anchor=FRONT+LEFT+BOTTOM, rounding=2, except=[TOP, BOTTOM, FRONT, BACK+RIGHT]);
             }
             
             // Side wall 2
             translate([hotend_cradle_width - 10.5, 0, -12]) {   
-                cube([10.5, wrist_depth, 12]);
+                cuboid([10.5, wrist_depth, 12], anchor=FRONT+LEFT+BOTTOM, rounding=2, except=[TOP, BOTTOM, FRONT, BACK+LEFT]);
             }
         }
 
@@ -127,7 +128,7 @@ module wrist_roll() {
 module extruder_placeholder() {
     rotate([90, 90, 0]) {
         translate([-60, -$extruder_width/2, -(20 - extruder_unit_offset_from_front) ]) {
-            cube([$extruder_width, $extruder_width, 24]);
+            cuboid([$extruder_width, $extruder_width, 24], anchor=FRONT+LEFT+BOTTOM);
             translate([38/2, 38/2, 24]) {
                 cylinder(h=19, r=18);
             }
@@ -161,7 +162,7 @@ module main() {
     difference() {
         import("../stl/ftobler_arm/files/gripperBase.stl");
         translate([-50, -15, -5]) {
-          cube([100, 50, 20]);
+          cuboid([100, 50, 20], anchor=FRONT+LEFT+BOTTOM);
         }
         
         // Hex nut hole 1
