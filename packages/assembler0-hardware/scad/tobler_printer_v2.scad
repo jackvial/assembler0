@@ -33,7 +33,7 @@ $fn = 64; // global smoothness for all circular geometry
 $render_vitamines = false;
 $extruder_width = 38;
 
-module wrist_roll() {
+module manipulator() {
 
   // Extruder cradle
   translate([-wrist_width/2, wrist_origin_y, extruder_cradle_height]) {
@@ -125,6 +125,39 @@ module wrist_roll() {
   }
 }
 
+module mount() {
+    difference() {
+        cuboid([wrist_width, 10, 10], anchor=FRONT+LEFT+BOTTOM, rounding=2, except=[TOP, BACK, FRONT]);
+        
+        // Three screw holes
+        spacing = 15;
+        
+        // center hole
+        translate([wrist_width/2, 5, -0.1]) {
+            cylinder(h=11, r=2);
+            
+            // hex nut hole
+            cylinder(h=4, r=4, $fn=6);
+        }
+        
+        // left hole
+        translate([wrist_width/2 - spacing, 5, -0.1]) {
+            cylinder(h=11, r=2);
+            
+            // hex nut hole
+            cylinder(h=4, r=4, $fn=6);
+        }
+        
+        // right hole
+        translate([wrist_width/2 + spacing, 5, -0.1]) {
+            cylinder(h=11, r=2);
+            
+            // hex nut hole
+            cylinder(h=4, r=4, $fn=6);
+        }
+    }
+}
+
 module extruder_placeholder() {
     rotate([90, 90, 0]) {
         translate([-60, -$extruder_width/2, -(20 - extruder_unit_offset_from_front) ]) {
@@ -158,31 +191,32 @@ module hotend_placeholder() {
 }
 
 module main() {
-  translate([0, 0, 60]) {
-    difference() {
-        import("../stl/ftobler_arm/files/gripperBase.stl");
-        translate([-50, -15, -5]) {
-          cuboid([100, 50, 20], anchor=FRONT+LEFT+BOTTOM);
-        }
+  translate([-wrist_width/2, wrist_origin_y-10, 60]) {
+    mount();
+    // difference() {
+    //     import("../stl/ftobler_arm/files/gripperBase.stl");
+    //     translate([-50, -15, -5]) {
+    //       cuboid([100, 50, 20], anchor=FRONT+LEFT+BOTTOM);
+    //     }
         
-        // Hex nut hole 1
-        translate([-15, -19, -0.1]) {
-            cylinder(h=3, r=4, $fn=6);
-        }
+    //     // Hex nut hole 1
+    //     translate([-15, -19, -0.1]) {
+    //         cylinder(h=3, r=4, $fn=6);
+    //     }
         
-        // Hex nut hole 2
-        translate([15, -19, -0.1]) {
-            cylinder(h=3, r=4, $fn=6);
-        }
+    //     // Hex nut hole 2
+    //     translate([15, -19, -0.1]) {
+    //         cylinder(h=3, r=4, $fn=6);
+    //     }
         
-        // Hex nut hole center
-        translate([0, -19, -0.1]) {
-            cylinder(h=3, r=4, $fn=6);
-        }
-    }
+    //     // Hex nut hole center
+    //     translate([0, -19, -0.1]) {
+    //         cylinder(h=3, r=4, $fn=6);
+    //     }
+    // }
   }
   
-  wrist_roll();
+  manipulator();
 
   if ($render_vitamines) {
     extruder_placeholder();
