@@ -5,7 +5,7 @@ include <BOSL2/gears.scad>
 circ_pitch = 5;
 teeth = 9;
 gear_height = 12;
-shaft_diam = 4;
+shaft_diam = 5.2;
 pressure_angle = 30;
 clearance = 0.3;
 backlash = 0.2;
@@ -15,7 +15,7 @@ base_cylinder_radius = 8.6;
 base_cylinder_height = 6;
 
 // Shaft hole
-shaft_hole_radius = 2;
+shaft_hole_radius = shaft_diam/2;
 shaft_hole_height = 10;
 
 // Side hole
@@ -35,20 +35,34 @@ module printer_small_gear() {
         clearance=clearance,
         backlash=backlash
     );
-    translate([0, 0, -(gear_height + eps)]) {
+    translate([0, 0, -(gear_height)]) {
         difference() {
             cylinder(r=base_cylinder_radius, h=base_cylinder_height, $fn=fn);
             translate([0, 0, -eps]) {
                 cylinder(r=shaft_hole_radius, h=base_cylinder_height + (2 * eps), $fn=fn);
             }
 
-            rotate([0, 90, 0]) {
-                translate([-3, 0, 0]) {
-                    cylinder(r=side_hole_radius, h=side_hole_height, $fn=fn);
-                }
+            // rotate([0, 90, 0]) {
+            //     translate([-3, 0, 0]) {
+            //         cylinder(r=side_hole_radius, h=side_hole_height, $fn=fn);
+            //     }
+            // }
+        }
+    }
+    
+    // shaft D fill
+    translate([0, 0, -12]) {
+        difference() {
+            cylinder(r=shaft_diam/2, h=base_cylinder_height, $fn=fn);
+            
+            // slice part off
+            translate([0, -0.8, -1]) {
+                cube([shaft_diam, shaft_diam, 20], center=true);
+                
             }
         }
     }
+    
 }
 
 printer_small_gear();
