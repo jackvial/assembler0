@@ -8,6 +8,26 @@ top_h = 14;
 ep=0.1;
 motor_w = 45;
 
+module pineapple_chunks() {
+    for(i = [0, 5]) {
+        pie_slice(r=r, ang=30, h=10);
+    } 
+    // difference() {
+    //     tube(h=top_h, or=r-5, ir=15);
+    //     angle=20;
+    //     translate([0, 0, -top_h]) {
+    //     rotate([0, 0, 90]) {   
+    //         pie_slice(r=r, ang=120, h=top_h*2, anchor=BOTTOM);
+    //     }
+    //     for (i = [0:5]) {
+    //         rotate([0, 0, 250 + i*(angle*2)]) {
+    //                 // pie_slice(r=r, ang=angle, h=top_h*2, anchor=BOTTOM);
+    //             }
+    //         }
+    //     }
+    // }
+}
+
 module base() {
     difference() {
         union() {
@@ -33,7 +53,11 @@ module base() {
                 tube(h=top_h+1, or=10, ir=0, anchor=BOTTOM);
             }
         }
+        
     }
+        // translate([0, 0, h+30]) {
+        //     pineapple_chunks();
+        // }
 }
 
 module main() {
