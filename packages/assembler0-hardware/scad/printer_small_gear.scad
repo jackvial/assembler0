@@ -5,7 +5,7 @@ include <BOSL2/gears.scad>
 circ_pitch = 5.44;
 teeth = 9;
 gear_height = 12;
-shaft_diam = 6.2;
+shaft_diam = 5.6;
 pressure_angle = 30;
 clearance = 0.1;
 backlash = 0;
