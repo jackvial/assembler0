@@ -56,7 +56,7 @@ module printer_small_gear() {
             cylinder(r=shaft_diam/2, h=base_cylinder_height, $fn=fn);
             
             // slice part off
-            translate([0, -0.8, -1]) {
+            translate([0, -0.75, 0]) {
                 cube([shaft_diam, shaft_diam, 20], center=true);
                 
             }
