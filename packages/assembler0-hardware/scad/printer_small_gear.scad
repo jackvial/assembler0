@@ -2,16 +2,16 @@ include <BOSL2/std.scad>
 include <BOSL2/gears.scad>
 
 // Gear
-circ_pitch = 5;
+circ_pitch = 5.44;
 teeth = 9;
 gear_height = 12;
-shaft_diam = 5.2;
+shaft_diam = 6.2;
 pressure_angle = 30;
-clearance = 0.3;
-backlash = 0.2;
+clearance = 0.1;
+backlash = 0;
 
 // Base cylinder
-base_cylinder_radius = 8.6;
+base_cylinder_radius = 9.5;
 base_cylinder_height = 6;
 
 // Shaft hole
