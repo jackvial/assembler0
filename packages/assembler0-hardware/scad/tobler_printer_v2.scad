@@ -127,7 +127,7 @@ module manipulator() {
 
 module mount() {
     difference() {
-        cuboid([wrist_width, 10, 10], anchor=FRONT+LEFT+BOTTOM, rounding=2, except=[TOP, BACK, FRONT]);
+        cuboid([wrist_width, 24, 10], anchor=FRONT+LEFT+BOTTOM, rounding=2, except=[TOP, BACK, FRONT]);
         
         // Three screw holes
         spacing = 15;
@@ -191,7 +191,7 @@ module hotend_placeholder() {
 }
 
 module main() {
-  translate([-wrist_width/2, wrist_origin_y-10, 60]) {
+  translate([-wrist_width/2, wrist_origin_y-24, 60]) {
     mount();
     // difference() {
     //     import("../stl/ftobler_arm/files/gripperBase.stl");
