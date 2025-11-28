@@ -33,6 +33,10 @@ $fn = 64; // global smoothness for all circular geometry
 $render_vitamines = false;
 $extruder_width = 38;
 
+// Fan
+fan_width = 40;
+fan_hole_center_offset = 3.5;
+
 module manipulator() {
 
   // Extruder cradle
@@ -75,12 +79,28 @@ module manipulator() {
 
         // Side wall 1
         translate([0, 0, -12]) {
-          cuboid([10.5, wrist_depth, 12], anchor=FRONT + LEFT + BOTTOM, rounding=2, except=[TOP, BOTTOM, FRONT, BACK + RIGHT]);
+            difference() {
+                  cuboid([10.5, wrist_depth, 12], anchor=FRONT + LEFT + BOTTOM, rounding=2, except=[TOP, BOTTOM, FRONT, BACK + RIGHT]);
+                  rotate([90, 0, 0]) {
+                  // @TODO - make this parametric
+                    translate([fan_hole_center_offset+3, fan_hole_center_offset, -(wrist_depth+1)]) {
+                        cylinder(r=1.5, h=wrist_depth+16);
+                    }
+                  }
+            }
         }
 
         // Side wall 2
         translate([hotend_cradle_width - 10.5, 0, -12]) {
-          cuboid([10.5, wrist_depth, 12], anchor=FRONT + LEFT + BOTTOM, rounding=2, except=[TOP, BOTTOM, FRONT, BACK + LEFT]);
+            difference() {
+              cuboid([10.5, wrist_depth, 12], anchor=FRONT + LEFT + BOTTOM, rounding=2, except=[TOP, BOTTOM, FRONT, BACK + LEFT]);
+              rotate([90, 0, 0]) {
+                // @TODO - make this parametric. Translation is relative to different sides of the wall on each side. Hence 6.5 on wall one and 4 here
+                translate([fan_hole_center_offset+0.5, fan_hole_center_offset, -(wrist_depth+1)]) {
+                    cylinder(r=1.5, h=wrist_depth+16);
+                }
+              }
+            }
         }
       }
 
@@ -190,7 +210,46 @@ module dual_mount() {
   import("../stl/community_arm/manipulator_dual.stl");
 }
 
+module fan() {
+    w=40;
+    difference() {
+        cuboid([w, 11.5, w]);
+        
+        // Corner hole 1 (top-right)
+        rotate([90,0,0]) {
+            translate([(w/2-fan_hole_center_offset), (w/2-fan_hole_center_offset), -8]) {
+                cylinder(r=1.5, h=16);
+            }
+        }
+        
+        // Corner hole 2 (top-left)
+        rotate([90,0,0]) {
+            translate([-(w/2-fan_hole_center_offset), (w/2-fan_hole_center_offset), -8]) {
+                cylinder(r=1.5, h=16);
+            }
+        }
+        
+        // Corner hole 3 (bottom-right)
+        rotate([90,0,0]) {
+            translate([(w/2-fan_hole_center_offset), -(w/2-fan_hole_center_offset), -8]) {
+                cylinder(r=1.5, h=16);
+            }
+        }
+        
+        // Corner hole 4 (bottom-left)
+        rotate([90,0,0]) {
+            translate([-(w/2-fan_hole_center_offset), -(w/2-fan_hole_center_offset), -8]) {
+                cylinder(r=1.5, h=16);
+            }
+        }
+    }
+}
+
 module main() {
+    // translate([0, -20, 90]) {
+    //     fan();
+    // }
+    
   translate([516.8, -244, 261.8]) {
     rotate([180, 0, 90]) {
         dual_mount();
