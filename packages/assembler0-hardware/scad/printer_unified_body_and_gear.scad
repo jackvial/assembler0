@@ -4,7 +4,7 @@ module body() {
 }
 
 module gear() {
-    color("red")
+    // color("red")
         translate([-100.5, 48.5 , 1.6])
             import(file = "../stl/community_arm/robot_belt_arm rotategear.stl");
 }
