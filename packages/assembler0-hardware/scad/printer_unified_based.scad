@@ -22,11 +22,36 @@ module limit_switch() {
 
 module limit_switch_mount() {
     // TODO: round the two top corners
+    cuboid([20, 5, 9], anchor=BOTTOM+FRONT);
     difference() {
-        cuboid([20, 2.6, 29], anchor=BOTTOM);
+        cuboid([20, 2.6, 29], anchor=BOTTOM, rounding=1.6, except=[BOTTOM, FRONT, BACK]);
+        
+        // big solder ends
+        translate([3, 11, 25.4]) {
+            rotate([90, 0, 0]) {
+                cylinder(r=2, h=20, $fn=32);
+            }
+        }
+        
+        translate([3, 11, 20.6]) {
+            rotate([90, 0, 0]) {
+                cylinder(r=2, h=20, $fn=32);
+            }
+        }
+        
+        translate([3, 11, 15.8]) {
+            rotate([90, 0, 0]) {
+                cylinder(r=2, h=20, $fn=32);
+            }
+        }
+        
+        // small solder ends
+        translate([-4.8, 1, 15.2]) {
+            cuboid([2.4, 5, 8], anchor=BOTTOM);
+        }
         
         // screw hole 1
-        translate([-7, 10, 11.5]) {
+        translate([-7, 10, 11.65]) {
             color("green")
             rotate([90, 0, 0]) {
                 cylinder(r=1.6, h=20, $fn=32);
@@ -34,7 +59,7 @@ module limit_switch_mount() {
         }
         
         // screw hole 2
-        translate([-7, 10, 26.5]) {
+        translate([-7, 10, 26.65]) {
             color("green")
             rotate([90, 0, 0]) {
                 cylinder(r=1.6, h=20, $fn=32);
@@ -53,6 +78,10 @@ module cut_old_mount() {
 }
 
 module main() {
+    translate([-42, -31.4, -0.1]) {
+        limit_switch_mount();
+    }
+    
     difference() {
         body();
         translate([-48, -40, 4.8]) {
@@ -60,9 +89,7 @@ module main() {
         }
     
     }
-    translate([-42, -31.4, -0.1]) {
-        limit_switch_mount();
-    }
+
     
     translate([-42, -30, 19]) {
         rotate([0, 90, 90]) {

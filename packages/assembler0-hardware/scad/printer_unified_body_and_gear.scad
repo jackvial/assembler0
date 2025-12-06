@@ -1,5 +1,5 @@
 module body() {
-    color("red")
+    // color("red")
     translate([-160, 390, 22])
         import(file = "../stl/community_arm/main_body_dual_v2.stl");
 }
@@ -28,10 +28,31 @@ module endstop() {
     }
 }
 
+module limit_switch() {
+    color("blue")
+    import(file = "../stl/creality_liimit_switch.stl");
+}
+
+
 module main() {
     body();
     gear();
-    endstop();
+    // endstop();
+    
+    
+    // Lower shank limit switch
+    translate([-34, -10, 62]) {
+        rotate([-90, 45, 0]) {
+            limit_switch();
+        }
+    }
+    
+    // Upper shank limit switch
+    translate([-27, 9, 30]) {
+        rotate([-90, 0, -90]) {
+            limit_switch();
+        }
+    }
 }
 
 main();
