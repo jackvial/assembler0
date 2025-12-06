@@ -44,6 +44,20 @@ module limit_switch_mount() {
             }
         }
         
+        // More small solder ends
+        translate([6, 11, 23]) {
+            rotate([90, 0, 0]) {
+                cylinder(r=1.3, h=20, $fn=32);
+            }
+        }
+        
+        translate([6, 11, 18]) {
+            rotate([90, 0, 0]) {
+                cylinder(r=1.3, h=20, $fn=32);
+            }
+        }
+        
+        
         // small solder ends
         translate([-4.8, 1, 15.2]) {
             cuboid([2.4, 5, 8], anchor=BOTTOM);

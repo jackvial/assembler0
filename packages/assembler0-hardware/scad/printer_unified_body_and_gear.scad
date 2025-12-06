@@ -38,7 +38,9 @@ module limit_switch() {
 module limit_switch_mount_upper_shank() {
     // cuboid([20, 5, 9], anchor=BOTTOM+FRONT);
     difference() {
-        cuboid([20, 2.6, 36], anchor=BOTTOM, rounding=1.6, except=[BOTTOM, FRONT, BACK]);
+        translate([0, 0, 35.8]) {
+            cuboid([20, 2.6, 52], anchor=TOP, except=[BOTTOM, FRONT, BACK]);
+        }
         
         // big solder ends
         translate([3, 11, 25.4]) {
@@ -56,6 +58,19 @@ module limit_switch_mount_upper_shank() {
         translate([3, 11, 15.8]) {
             rotate([90, 0, 0]) {
                 cylinder(r=2, h=20, $fn=32);
+            }
+        }
+        
+        // More small solder ends
+        translate([6, 11, 23]) {
+            rotate([90, 0, 0]) {
+                cylinder(r=1.3, h=20, $fn=32);
+            }
+        }
+        
+        translate([6, 11, 18]) {
+            rotate([90, 0, 0]) {
+                cylinder(r=1.3, h=20, $fn=32);
             }
         }
         
@@ -112,6 +127,19 @@ module limit_switch_mount_lower_shank() {
             }
         }
         
+        // More small solder ends
+        translate([6, 11, 23]) {
+            rotate([90, 0, 0]) {
+                cylinder(r=1.3, h=20, $fn=32);
+            }
+        }
+        
+        translate([6, 11, 18]) {
+            rotate([90, 0, 0]) {
+                cylinder(r=1.3, h=20, $fn=32);
+            }
+        }
+        
         // small solder ends
         translate([-4.8, 1, 15.2]) {
             cuboid([2.4, 5, 8], anchor=BOTTOM);
@@ -143,7 +171,19 @@ module limit_switch_mount_lower_shank() {
 module main() {
     body();
     gear();
-    // endstop();
+    
+    
+    // Mount side 1
+    translate([-24, 22.5, 40]) {
+        color("red")
+        cuboid([8, 6, 20], anchor=TOP);
+    }
+    
+    // Mount side 2
+    translate([-24, -23.5, 40]) {
+        color("red")
+        cuboid([8, 6, 20], anchor=TOP);
+    }
     
     
     // Lower shank limit switch
