@@ -21,7 +21,6 @@ module limit_switch() {
 }
 
 module limit_switch_mount() {
-    // TODO: round the two top corners
     cuboid([20, 5, 9], anchor=BOTTOM+FRONT);
     difference() {
         cuboid([20, 2.6, 29], anchor=BOTTOM, rounding=1.6, except=[BOTTOM, FRONT, BACK]);
@@ -82,45 +81,45 @@ module main() {
         limit_switch_mount();
     }
     
-    difference() {
-        body();
-        translate([-48, -40, 4.8]) {
-            cut_old_mount();
-        }
+    // difference() {
+    //     body();
+    //     translate([-48, -40, 4.8]) {
+    //         cut_old_mount();
+    //     }
     
-    }
+    // }
 
     
-    translate([-42, -30, 19]) {
-        rotate([0, 90, 90]) {
-            limit_switch();
-        }
-    }
+    // translate([-42, -30, 19]) {
+    //     rotate([0, 90, 90]) {
+    //         limit_switch();
+    //     }
+    // }
     
-    translate([-100, 50, 18]) {
-        basering();
-    }
+    // translate([-100, 50, 18]) {
+    //     basering();
+    // }
     
-    // leg 1
-    rotate([90, 0, 90]) {
-        translate([-29, -6.2, 0]) {
-            leg();
-        }
-    }
+    // // leg 1
+    // rotate([90, 0, 90]) {
+    //     translate([-29, -6.2, 0]) {
+    //         leg();
+    //     }
+    // }
     
-    // leg 2
-    rotate([90, 0, 180]) {
-        translate([-30, -6.2, 1]) {
-            leg();
-        }
-    }
+    // // leg 2
+    // rotate([90, 0, 180]) {
+    //     translate([-30, -6.2, 1]) {
+    //         leg();
+    //     }
+    // }
     
-    // leg 3
-    rotate([90, 0, -90]) {
-        translate([-31, -6.2, 0]) {
-            leg();
-        }
-    }
+    // // leg 3
+    // rotate([90, 0, -90]) {
+    //     translate([-31, -6.2, 0]) {
+    //         leg();
+    //     }
+    // }
 }
 
 main();
