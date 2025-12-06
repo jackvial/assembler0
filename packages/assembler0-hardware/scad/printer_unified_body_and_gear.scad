@@ -106,7 +106,15 @@ module limit_switch_mount_lower_shank() {
     difference() {
         translate([0, 0, 29]) {
             cuboid([20, 2.6, 20], anchor=TOP, rounding=1.6, except=[BOTTOM, FRONT, BACK]);
+            // Connect cross bar to lower shank limit switch
+            translate([0, 0, -12]) {
+                color("green")
+                rotate([0, 45, 0]) {
+                    cuboid([11, 2.6, 30], anchor=TOP);
+                }
+            }
         }
+        
         
         // big solder ends
         translate([3, 11, 25.4]) {
@@ -142,7 +150,7 @@ module limit_switch_mount_lower_shank() {
         
         // small solder ends
         translate([-4.8, 1, 15.2]) {
-            cuboid([2.4, 5, 8], anchor=BOTTOM);
+            cuboid([2.4, 6, 8], anchor=BOTTOM);
         }
         
         // screw hole 1
@@ -185,7 +193,6 @@ module main() {
         cuboid([8, 6, 20], anchor=TOP);
     }
     
-    
     // Lower shank limit switch
     translate([-34, -10, 62]) {
         translate([13.5, -1.6, -13.5]) {
@@ -194,7 +201,15 @@ module main() {
             }
         }
         rotate([-90, 45, 0]) {
-            limit_switch();
+            // limit_switch();
+        }
+        
+        // Fillet
+        translate([5, -0.3, -31.5]) {
+            color("red")
+            rotate([0, 90, 90]) {
+                fillet(r=2, h=2.6, anchor=TOP);
+            }
         }
     }
     
@@ -206,7 +221,7 @@ module main() {
             }
         }
         rotate([-90, 0, -90]) {
-            limit_switch();
+            // limit_switch();
         }
     }
 }
